@@ -61,6 +61,19 @@ All errors: `{error:{code, message, details?}}`
 Codes: `VALIDATION_ERROR` (400), `NOT_FOUND` (404), `UPSTREAM_UNAVAILABLE` (502), `RATE_LIMITED` (429), `INTERNAL` (500).
 iOS maps these to `AppError` with user-friendly messages.
 
+## iOS Data layer
+`CatalogueData` depends on `CatalogueDomain` and Foundation only. `APIClient` receives its base URL through `APIConfiguration` and sends requests through the injectable `HTTPTransport`; production uses an ephemeral, no-cache URL session with a 10-second timeout. Internal DTOs are mapped to Domain entities in one place, including parsing decimal-string prices with a POSIX locale. Tests inject a fake transport and do not use the network.
+
+| Response or transport failure | Domain result |
+|---|---|
+| Connectivity, DNS, connection loss, or timeout `URLError` | `AppError.unreachable` |
+| `400 VALIDATION_ERROR` | `AppError.validation(fields:)`, populated from `details` |
+| `404` | `AppError.notFound` |
+| `429` | `AppError.rateLimited` |
+| `502` or another `5xx` | `AppError.serverUnavailable` |
+| Malformed response, unexpected status, or other transport error | `AppError.unexpected` |
+| Task cancellation | `CancellationError` (propagated unchanged) |
+
 ## API examples
 Trimmed responses captured by a live smoke test against the Fake Store API:
 
