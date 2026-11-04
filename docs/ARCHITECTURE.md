@@ -16,8 +16,13 @@ backend/                  routes -> services -> ports; adapters implement ports
   src/http/               Fastify routes, schemas (zod), error handler
 ios/
   CatalogueCore/          local Swift Package (swift test, no UI)
-    Domain/               entities, repository protocols, use cases
-    Data/                 APIClient, DTOs, mappers, repository implementations
+    Package.swift         separate CatalogueDomain and CatalogueData targets
+    Sources/
+      CatalogueDomain/    Foundation-only entities, protocols, validation, use cases
+      CatalogueData/      API client, DTOs, mappers, repository implementations
+    Tests/
+      CatalogueDomainTests/
+      CatalogueDataTests/
   CatalogueApp/           SwiftUI app
     Presentation/         Views, ViewModels (@Observable), Navigation
     DesignSystem/         tokens + reusable components
@@ -26,6 +31,7 @@ ios/
 
 ## Dependency rule
 `Presentation -> Domain <- Data`. Domain imports Foundation only. DTOs never leave Data. Views never touch repositories directly, only ViewModels via use cases.
+The Swift package has two library targets: `CatalogueData` depends on `CatalogueDomain`, while `CatalogueDomain` has no target dependencies. SwiftPM therefore prevents Domain from importing Data at compile time.
 Backend: `http -> services -> domain <- adapters`.
 
 ## iOS patterns

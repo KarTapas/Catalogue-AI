@@ -16,6 +16,9 @@ xcuserdata/
 *.mode1v3
 *.mode2v3
 
+# Swift Package Manager
+.build/
+
 # macOS
 .DS_Store
 .AppleDouble
