@@ -1,5 +1,5 @@
 export class NotFoundError extends Error {
-  readonly code: "NOT_FOUND" = "NOT_FOUND";
+  readonly code = "NOT_FOUND" as const;
 
   constructor(message = "Product not found") {
     super(message);
@@ -8,7 +8,7 @@ export class NotFoundError extends Error {
 }
 
 export class UpstreamUnavailableError extends Error {
-  readonly code: "UPSTREAM_UNAVAILABLE" = "UPSTREAM_UNAVAILABLE";
+  readonly code = "UPSTREAM_UNAVAILABLE" as const;
 
   constructor() {
     super("Product source unavailable");
@@ -17,7 +17,7 @@ export class UpstreamUnavailableError extends Error {
 }
 
 export class ValidationError extends Error {
-  readonly code: "VALIDATION_ERROR" = "VALIDATION_ERROR";
+  readonly code = "VALIDATION_ERROR" as const;
 
   constructor(message = "Invalid input") {
     super(message);

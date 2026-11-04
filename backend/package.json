@@ -10,7 +10,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "vitest run",
-    "lint": "eslint --max-warnings=0 eslint.config.js && tsc --noEmit --project tsconfig.test.json"
+    "lint": "eslint --max-warnings=0 src test eslint.config.js && tsc --noEmit --project tsconfig.test.json"
   },
   "dependencies": {
     "fastify": "^5.0.0",
@@ -19,6 +19,7 @@
   "devDependencies": {
     "eslint": "^10.14.0",
     "typescript": "^5.7.2",
+    "typescript-eslint": "^8.72.1",
     "vitest": "^4.1.12"
   },
   "overrides": {

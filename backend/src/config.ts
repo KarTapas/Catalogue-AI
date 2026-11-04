@@ -1,0 +1,84 @@
+import { z } from "zod";
+
+const featuredIdsSchema = z.string().default("").transform((value, context) => {
+  if (value.trim() === "") {
+    return [];
+  }
+
+  const ids: number[] = [];
+  for (const rawId of value.split(",")) {
+    const trimmedId = rawId.trim();
+    if (!/^\d+$/.test(trimmedId)) {
+      context.addIssue({
+        code: "custom",
+        message: "must be a comma-separated list of positive integers",
+      });
+      return z.NEVER;
+    }
+
+    const id = Number(trimmedId);
+    if (!Number.isSafeInteger(id) || id < 1) {
+      context.addIssue({
+        code: "custom",
+        message: "must be a comma-separated list of positive integers",
+      });
+      return z.NEVER;
+    }
+
+    ids.push(id);
+  }
+
+  return ids;
+});
+
+const environmentSchema = z.object({
+  PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+  FAKESTORE_BASE_URL: z
+    .string()
+    .url()
+    .default("https://fakestoreapi.com"),
+  FEATURED_IDS: featuredIdsSchema,
+  SALES_INBOX: z.string().email().default("sales@example.com"),
+  EMAIL_PROVIDER: z.enum(["mailpit", "smtp"]).default("mailpit"),
+  SMTP_HOST: z.string().min(1).default("mailpit"),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(1025),
+});
+
+export type Config = {
+  port: number;
+  fakeStoreBaseUrl: string;
+  featuredIds: number[];
+  salesInbox: string;
+  emailProvider: "mailpit" | "smtp";
+  smtpHost: string;
+  smtpPort: number;
+};
+
+function getRuntimeEnvironment(): Record<string, string | undefined> {
+  const runtime = globalThis as typeof globalThis & {
+    process: { env: Record<string, string | undefined> };
+  };
+  return runtime.process.env;
+}
+
+export function parseConfig(
+  environment: Record<string, string | undefined> = getRuntimeEnvironment(),
+): Config {
+  const result = environmentSchema.safeParse(environment);
+  if (!result.success) {
+    const details = result.error.issues
+      .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+      .join("; ");
+    throw new Error(`Invalid configuration: ${details}`);
+  }
+
+  return {
+    port: result.data.PORT,
+    fakeStoreBaseUrl: result.data.FAKESTORE_BASE_URL,
+    featuredIds: result.data.FEATURED_IDS,
+    salesInbox: result.data.SALES_INBOX,
+    emailProvider: result.data.EMAIL_PROVIDER,
+    smtpHost: result.data.SMTP_HOST,
+    smtpPort: result.data.SMTP_PORT,
+  };
+}

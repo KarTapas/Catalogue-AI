@@ -23,7 +23,7 @@ function makeSource(fetchFn: typeof fetch, timeoutMs = 5_000) {
 
 describe("FakeStoreProductSource", () => {
   it("maps product data and formats prices as decimal strings", async () => {
-    const source = makeSource(async () => jsonResponse(fakeStoreProducts));
+    const source = makeSource(() => Promise.resolve(jsonResponse(fakeStoreProducts)));
 
     const products = await source.listAll();
 
@@ -46,7 +46,9 @@ describe("FakeStoreProductSource", () => {
   });
 
   it("gets and maps a product by id", async () => {
-    const source = makeSource(async () => jsonResponse(fakeStoreProducts[2]));
+    const source = makeSource(() =>
+      Promise.resolve(jsonResponse(fakeStoreProducts[2])),
+    );
 
     const product = await source.getById(3);
 
@@ -61,7 +63,9 @@ describe("FakeStoreProductSource", () => {
   it.each(["", "null"])(
     "maps an empty or null body for an unknown id to NotFoundError",
     async (body) => {
-      const source = makeSource(async () => new Response(body, { status: 200 }));
+      const source = makeSource(() =>
+        Promise.resolve(new Response(body, { status: 200 })),
+      );
       const request = source.getById(999);
 
       await expect(request).rejects.toBeInstanceOf(NotFoundError);
@@ -71,7 +75,7 @@ describe("FakeStoreProductSource", () => {
 
   it("lists categories", async () => {
     const categories = ["men's clothing", "jewelery"];
-    const source = makeSource(async () => jsonResponse(categories));
+    const source = makeSource(() => Promise.resolve(jsonResponse(categories)));
 
     await expect(source.listCategories()).resolves.toEqual(categories);
   });
@@ -79,9 +83,14 @@ describe("FakeStoreProductSource", () => {
   it("encodes category names and returns mapped products", async () => {
     const category = "men's clothing";
     let requestedUrl = "";
-    const fetchFn: typeof fetch = async (input) => {
-      requestedUrl = String(input);
-      return jsonResponse([fakeStoreProducts[0]]);
+    const fetchFn: typeof fetch = (input) => {
+      requestedUrl =
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.href
+            : input.url;
+      return Promise.resolve(jsonResponse([fakeStoreProducts[0]]));
     };
     const source = makeSource(fetchFn);
 
@@ -100,7 +109,10 @@ describe("FakeStoreProductSource", () => {
 
   it("maps non-2xx responses to a generic upstream error", async () => {
     const source = makeSource(
-      async () => new Response("private upstream details", { status: 503 }),
+      () =>
+        Promise.resolve(
+          new Response("private upstream details", { status: 503 }),
+        ),
     );
     const request = source.listAll();
 
@@ -112,9 +124,9 @@ describe("FakeStoreProductSource", () => {
   });
 
   it("maps network failures to a generic upstream error", async () => {
-    const source = makeSource(async () => {
-      throw new Error("private network details");
-    });
+    const source = makeSource(() =>
+      Promise.reject(new Error("private network details")),
+    );
     const request = source.listAll();
 
     await expect(request).rejects.toBeInstanceOf(UpstreamUnavailableError);
@@ -151,8 +163,10 @@ describe("FakeStoreProductSource", () => {
 
   it("skips malformed items in a product collection", async () => {
     const malformedProduct = { ...fakeStoreProducts[0], price: "109.95" };
-    const source = makeSource(async () =>
-      jsonResponse([fakeStoreProducts[1], malformedProduct, null]),
+    const source = makeSource(() =>
+      Promise.resolve(
+        jsonResponse([fakeStoreProducts[1], malformedProduct, null]),
+      ),
     );
 
     const products = await source.listAll();
