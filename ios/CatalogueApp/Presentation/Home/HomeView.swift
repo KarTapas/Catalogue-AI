@@ -5,10 +5,6 @@ struct HomeView: View {
     @Bindable var viewModel: HomeViewModel
     @Binding var path: [Route]
 
-    private let columns = [
-        GridItem(.adaptive(minimum: 150), spacing: Spacing.s12),
-    ]
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.s24) {
@@ -71,11 +67,9 @@ struct HomeView: View {
                 isEmpty: { $0.isEmpty },
                 onRetry: retry
             ) { products in
-                LazyVGrid(columns: columns, spacing: Spacing.s12) {
-                    ForEach(products, id: \.id) { product in
-                        ProductTile(product: product) {
-                            path.append(.product(product.id))
-                        }
+                ProductGrid(products: products) { product, _ in
+                    ProductTile(product: product) {
+                        path.append(.product(product.id))
                     }
                 }
             }

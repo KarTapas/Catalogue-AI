@@ -10,7 +10,7 @@ Do them in order. One task per PR-sized change. Each follows AGENTS.md workflow.
 - [x] T6 iOS Core: APIClient, DTOs, mappers, repositories (+ tests with stubbed URLProtocol)
 - [x] T7 iOS App: DesignSystem, AppContainer, Config, ATS localhost exception
 - [x] T8 iOS: Home (featured + categories)
-- [ ] T9 iOS: Category page
+- [x] T9 iOS: Category page
 - [ ] T10 iOS: Search
 - [ ] T11 iOS: Product detail
 - [ ] T12 iOS: Enquiry form + Thank you

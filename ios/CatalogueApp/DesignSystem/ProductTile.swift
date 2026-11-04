@@ -3,11 +3,13 @@ import SwiftUI
 
 struct ProductTile: View {
     let product: Product
+    private let rank: Int?
     private let action: (() -> Void)?
 
-    init(product: Product, action: (() -> Void)? = nil) {
+    init(product: Product, action: (() -> Void)? = nil, rank: Int? = nil) {
         self.product = product
         self.action = action
+        self.rank = rank
     }
 
     var body: some View {
@@ -49,11 +51,20 @@ struct ProductTile: View {
             Palette.surface,
             in: RoundedRectangle(cornerRadius: Radius.r12)
         )
+        .overlay(alignment: .topLeading) {
+            if let rank {
+                ProductRankBadge(rank: rank)
+                    .padding(Spacing.s8)
+            }
+        }
         .accessibilityElement(children: .combine)
     }
 
     private var accessibilityLabel: String {
         let rating = product.rating.rate.formatted(.number.precision(.fractionLength(1)))
+        if let rank {
+            return "\(product.title), \(product.price.formattedAmount), rating \(rating), rank \(rank)"
+        }
         return "\(product.title), \(product.price.formattedAmount), rating \(rating), \(product.rating.count) reviews"
     }
 }

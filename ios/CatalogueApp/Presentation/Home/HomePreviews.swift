@@ -12,9 +12,11 @@ private enum HomePreviewScenario: Sendable {
 private struct HomePreviewHost: View {
     @State private var viewModel: HomeViewModel
     @State private var path: [Route] = []
+    private let repository: HomePreviewProductRepository
 
     init(scenario: HomePreviewScenario) {
         let repository = HomePreviewProductRepository(scenario: scenario)
+        self.repository = repository
         _viewModel = State(
             initialValue: HomeViewModel(
                 getFeaturedProducts: GetFeaturedProductsUseCase(repository: repository),
@@ -31,7 +33,13 @@ private struct HomePreviewHost: View {
                 .navigationDestination(for: Route.self) { route in
                     switch route {
                     case .category(let category):
-                        CategoryPlaceholderView(category: category)
+                        CategoryView(
+                            viewModel: CategoryViewModel(
+                                categoryName: category,
+                                getCategoryProducts: GetCategoryProductsUseCase(repository: repository)
+                            ),
+                            path: $path
+                        )
                     case .product(let id):
                         ProductPlaceholderView(id: id)
                     case .search(let query):

@@ -7,18 +7,21 @@ struct LoadStateView<Value, Content: View>: View {
     let isEmpty: (Value) -> Bool
     let onRetry: () -> Void
     private let content: (Value) -> Content
+    private let errorMessage: (AppError) -> String
 
     init(
         state: LoadState<Value>,
         emptyMessage: String = "No items to show.",
         isEmpty: @escaping (Value) -> Bool = { _ in false },
         onRetry: @escaping () -> Void,
+        errorMessage: @escaping (AppError) -> String = { $0.message },
         @ViewBuilder content: @escaping (Value) -> Content
     ) {
         self.state = state
         self.emptyMessage = emptyMessage
         self.isEmpty = isEmpty
         self.onRetry = onRetry
+        self.errorMessage = errorMessage
         self.content = content
     }
 
@@ -46,7 +49,7 @@ struct LoadStateView<Value, Content: View>: View {
                 }
             case .failed(let error):
                 VStack(spacing: Spacing.s16) {
-                    Text(error.message)
+                    Text(errorMessage(error))
                         .font(Typography.body)
                         .foregroundStyle(Palette.error)
                         .multilineTextAlignment(.center)
