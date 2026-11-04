@@ -2,7 +2,7 @@
 Do them in order. One task per PR-sized change. Each follows AGENTS.md workflow.
 
 - [x] T0 Repo skeleton, docker-compose (backend + Mailpit), .env.example, CI stub
-- [ ] T1 Backend: domain types + `ProductSource` port + `FakeStoreProductSource` (+ tests with fixture)
+- [x] T1 Backend: domain types + `ProductSource` port + `FakeStoreProductSource` (+ tests with fixture)
 - [ ] T2 Backend: catalogue service (featured, category split, search) (+ unit tests)
 - [ ] T3 Backend: HTTP routes, zod validation, error handler (+ route tests)
 - [ ] T4 Backend: `EmailSender` port, Console + SMTP adapters, enquiry service + route, rate limit, sanitising (+ tests)
