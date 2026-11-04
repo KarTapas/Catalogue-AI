@@ -44,3 +44,7 @@ Format: `YYYY-MM-DD HH:MM | type | note` where type = decision | convention | mi
 2026-11-05 00:14 | decision | Product detail fetches by ID to support deep links and stale list data; Enquire stays disabled until loaded and opens the T12 placeholder sheet.
 2026-11-05 00:14 | fix | Copying backend/.env.example to .env did not supply the required EMAIL_FROM; restarted with EMAIL_FROM=catalogue@example.test and EMAIL_PROVIDER=console, then verified both product endpoints.
 2026-11-05 00:14 | surprise | Xcode emitted an AppIntents metadata-extraction warning despite successful build/tests and no AppIntents dependency.
+2026-11-05 02:23 | decision | Enquiry field errors appear only after touch or submit; submissions are single-flight, failures preserve entered values, success clears them, and field values are never logged.
+2026-11-05 02:23 | fix | `npm start` now uses Node's built-in `--env-file=.env`; a clean temporary copy using only `.env.example` started successfully and returned health 200.
+2026-11-05 02:23 | mistake | A duplicate clean-config start hit EADDRINUSE because the earlier Node child outlived its wrapper; stopped the exact PID and verified ports 3000, 1025, and 8025 were free.
+2026-11-05 02:23 | surprise | Mailpit rejected the CR/LF Bcc name with 400 before sending, and the app's second real message used `test.customer@example.test` as Reply-To. The simulator also retained T11's largest Dynamic Type setting, so screenshots were recaptured at standard size.

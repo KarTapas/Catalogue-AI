@@ -56,6 +56,33 @@ struct CatalogueApp: App {
             return .search(query)
         }
 
+        let submitEnquiryPrefix = "enquiry-submit:"
+        if route.hasPrefix(submitEnquiryPrefix) {
+            let rawID = String(route.dropFirst(submitEnquiryPrefix.count))
+            guard let productID = Int(rawID), productID > 0 else {
+                return nil
+            }
+            return .enquiry(productID, .submit)
+        }
+
+        let enquiryErrorsPrefix = "enquiry-errors:"
+        if route.hasPrefix(enquiryErrorsPrefix) {
+            let rawID = String(route.dropFirst(enquiryErrorsPrefix.count))
+            guard let productID = Int(rawID), productID > 0 else {
+                return nil
+            }
+            return .enquiry(productID, .errors)
+        }
+
+        let enquiryPrefix = "enquiry:"
+        if route.hasPrefix(enquiryPrefix) {
+            let rawID = String(route.dropFirst(enquiryPrefix.count))
+            guard let productID = Int(rawID), productID > 0 else {
+                return nil
+            }
+            return .enquiry(productID, .form)
+        }
+
         let productPrefix = "product:"
         if route.hasPrefix(productPrefix) {
             let rawID = String(route.dropFirst(productPrefix.count))

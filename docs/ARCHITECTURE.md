@@ -99,6 +99,10 @@ Requests and trimmed responses captured by the live console-email smoke test:
 | `curl -i -X POST http://localhost:3000/api/v1/enquiries -H 'content-type: application/json' -d '{"productId":1,"name":"Live Smoke Test","email":"not-an-email","message":"Smoke enquiry"}'` | `400 {"error":{"code":"VALIDATION_ERROR","message":"Invalid request","details":[{"field":"email","message":"Invalid value"}]}}` |
 | `curl -i -X POST http://localhost:3000/api/v1/enquiries -H 'content-type: application/json' -d '{"productId":9999,"name":"Live Smoke Test","email":"customer@example.test","message":"Smoke enquiry"}'` | `404 {"error":{"code":"NOT_FOUND","message":"Product not found"}}` |
 
+### Verified end to end
+
+With Mailpit v1.33.0, a valid enquiry returned `202` with id `6e6fa904-01f3-44c3-b13f-b742818cc659`. Mailpit received subject `New enquiry: Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops (#1)` at `sales@example.test`, with Reply-To `smtp.test@example.test`; the body contained the product, customer details, and requested message. A name containing CR/LF followed by `Bcc:` returned `400 VALIDATION_ERROR`; Mailpit remained at one message with no Bcc. The app's `enquiry-submit:1` route delivered a second message with Reply-To `test.customer@example.test`.
+
 ## Security basics
 Validate with zod at the edge. Rate-limit `/enquiries`. Sanitise CR/LF out of any value placed in email headers. Escape user text in HTML email. CORS minimal. No secrets in code. ATS exception for `localhost` only.
 

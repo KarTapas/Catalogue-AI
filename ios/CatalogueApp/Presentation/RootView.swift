@@ -5,6 +5,9 @@ enum Route: Hashable {
     case category(String)
     case product(Int)
     case search(String)
+    #if DEBUG
+    case enquiry(Int, EnquiryPreviewMode)
+    #endif
 }
 
 struct RootView: View {
@@ -13,6 +16,7 @@ struct RootView: View {
     private let getCategoryProducts: GetCategoryProductsUseCase
     private let searchProducts: SearchProductsUseCase
     private let getProduct: GetProductUseCase
+    private let submitEnquiry: SubmitEnquiryUseCase
 
     init(container: AppContainer, initialRoute: Route? = nil) {
         _path = State(initialValue: initialRoute.map { [$0] } ?? [])
@@ -25,6 +29,7 @@ struct RootView: View {
         getCategoryProducts = container.getCategoryProducts
         searchProducts = container.searchProducts
         getProduct = container.getProduct
+        submitEnquiry = container.submitEnquiry
     }
 
     var body: some View {
@@ -47,8 +52,20 @@ struct RootView: View {
                             viewModel: ProductDetailViewModel(
                                 productID: id,
                                 getProduct: getProduct
-                            )
+                            ),
+                            submitEnquiry: submitEnquiry
                         )
+                    #if DEBUG
+                    case .enquiry(let id, let mode):
+                        ProductDetailView(
+                            viewModel: ProductDetailViewModel(
+                                productID: id,
+                                getProduct: getProduct
+                            ),
+                            submitEnquiry: submitEnquiry,
+                            debugPreviewMode: mode
+                        )
+                    #endif
                     case .search(let query):
                         SearchResultsView(
                             viewModel: SearchResultsViewModel(

@@ -37,8 +37,13 @@ private struct CategoryPreviewHost: View {
                             viewModel: ProductDetailViewModel(
                                 productID: id,
                                 getProduct: GetProductUseCase(repository: repository)
-                            )
+                            ),
+                            submitEnquiry: SubmitEnquiryUseCase(repository: repository)
                         )
+                    #if DEBUG
+                    case .enquiry(let id, _):
+                        Text("Enquiry: \(id)")
+                    #endif
                     case .search(let query):
                         SearchResultsView(
                             viewModel: SearchResultsViewModel(
@@ -53,7 +58,7 @@ private struct CategoryPreviewHost: View {
     }
 }
 
-private struct CategoryPreviewRepository: ProductRepository {
+private struct CategoryPreviewRepository: ProductRepository, EnquiryRepository {
     let scenario: CategoryPreviewScenario
 
     func featured() async throws -> [Product] {
@@ -90,6 +95,10 @@ private struct CategoryPreviewRepository: ProductRepository {
             throw AppError.notFound
         }
         return product
+    }
+
+    func submit(_ enquiry: Enquiry) async throws -> EnquiryReceipt {
+        EnquiryReceipt(id: "preview")
     }
 }
 

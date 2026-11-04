@@ -2,6 +2,14 @@
 
 Setup coming.
 
+## Backend setup
+
+Before starting the backend, copy the example configuration:
+
+```sh
+cp backend/.env.example backend/.env
+```
+
 ## Folder layout
 
 ```text

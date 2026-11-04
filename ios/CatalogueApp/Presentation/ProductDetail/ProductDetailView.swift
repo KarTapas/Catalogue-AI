@@ -1,11 +1,30 @@
+import CatalogueDomain
 import SwiftUI
 
 struct ProductDetailView: View {
     @State private var viewModel: ProductDetailViewModel
+    private let submitEnquiry: SubmitEnquiryUseCase
 
-    init(viewModel: ProductDetailViewModel) {
+    #if DEBUG
+    private let debugPreviewMode: EnquiryPreviewMode?
+    #endif
+
+    #if DEBUG
+    init(
+        viewModel: ProductDetailViewModel,
+        submitEnquiry: SubmitEnquiryUseCase,
+        debugPreviewMode: EnquiryPreviewMode? = nil
+    ) {
         _viewModel = State(initialValue: viewModel)
+        self.submitEnquiry = submitEnquiry
+        self.debugPreviewMode = debugPreviewMode
     }
+    #else
+    init(viewModel: ProductDetailViewModel, submitEnquiry: SubmitEnquiryUseCase) {
+        _viewModel = State(initialValue: viewModel)
+        self.submitEnquiry = submitEnquiry
+    }
+    #endif
 
     var body: some View {
         ScrollView {
@@ -75,17 +94,32 @@ struct ProductDetailView: View {
         }
         .task {
             await viewModel.load()
+            #if DEBUG
+            if debugPreviewMode != nil {
+                viewModel.enquire()
+            }
+            #endif
         }
         .navigationTitle("Product")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $viewModel.isEnquirySheetPresented) {
             if let product = viewModel.content.value {
-                EnquiryPlaceholderView(
-                    productID: product.id,
-                    productTitle: product.title
-                ) {
-                    viewModel.isEnquirySheetPresented = false
-                }
+                #if DEBUG
+                EnquiryView(
+                    viewModel: EnquiryViewModel(
+                        product: EnquiryProduct(product: product),
+                        submitEnquiry: submitEnquiry
+                    ),
+                    debugPreviewMode: debugPreviewMode
+                )
+                #else
+                EnquiryView(
+                    viewModel: EnquiryViewModel(
+                        product: EnquiryProduct(product: product),
+                        submitEnquiry: submitEnquiry
+                    )
+                )
+                #endif
             }
         }
     }
@@ -94,35 +128,5 @@ struct ProductDetailView: View {
         Task {
             await viewModel.retry()
         }
-    }
-}
-
-private struct EnquiryPlaceholderView: View {
-    let productID: Int
-    let productTitle: String
-    let onClose: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.s16) {
-            Text("Enquiry")
-                .font(Typography.title)
-                .foregroundStyle(Palette.textPrimary)
-
-            Text("placeholder, replaced in T12")
-                .font(Typography.headline)
-                .foregroundStyle(Palette.textSecondary)
-
-            Text(verbatim: "Enquiring about \(productTitle) (product \(productID))")
-                .font(Typography.body)
-                .foregroundStyle(Palette.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Spacer(minLength: Spacing.s16)
-
-            PrimaryButton(title: "Close", action: onClose)
-        }
-        .padding(Spacing.s24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Palette.background)
     }
 }

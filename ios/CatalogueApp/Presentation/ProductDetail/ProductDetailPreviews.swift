@@ -12,9 +12,11 @@ private enum ProductDetailPreviewScenario: Sendable {
 
 private struct ProductDetailPreviewHost: View {
     @State private var viewModel: ProductDetailViewModel
+    private let repository: ProductDetailPreviewRepository
 
     init(scenario: ProductDetailPreviewScenario) {
         let repository = ProductDetailPreviewRepository(scenario: scenario)
+        self.repository = repository
         _viewModel = State(
             initialValue: ProductDetailViewModel(
                 productID: repository.productID,
@@ -25,12 +27,15 @@ private struct ProductDetailPreviewHost: View {
 
     var body: some View {
         NavigationStack {
-            ProductDetailView(viewModel: viewModel)
+            ProductDetailView(
+                viewModel: viewModel,
+                submitEnquiry: SubmitEnquiryUseCase(repository: repository)
+            )
         }
     }
 }
 
-private struct ProductDetailPreviewRepository: ProductRepository {
+private struct ProductDetailPreviewRepository: ProductRepository, EnquiryRepository {
     let scenario: ProductDetailPreviewScenario
 
     var productID: Int {
@@ -71,6 +76,10 @@ private struct ProductDetailPreviewRepository: ProductRepository {
         case .longContent:
             return ProductDetailPreviewData.longProduct
         }
+    }
+
+    func submit(_ enquiry: Enquiry) async throws -> EnquiryReceipt {
+        EnquiryReceipt(id: "preview")
     }
 }
 
