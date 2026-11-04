@@ -4,7 +4,7 @@ Do them in order. One task per PR-sized change. Each follows AGENTS.md workflow.
 - [x] T0 Repo skeleton, docker-compose (backend + Mailpit), .env.example, CI stub
 - [x] T1 Backend: domain types + `ProductSource` port + `FakeStoreProductSource` (+ tests with fixture)
 - [x] T2 Backend: catalogue service (featured, category split, search) (+ unit tests)
-- [ ] T3 Backend: HTTP routes, zod validation, error handler (+ route tests)
+- [x] T3 Backend: HTTP routes, zod validation, error handler (+ route tests)
 - [ ] T4 Backend: `EmailSender` port, Console + SMTP adapters, enquiry service + route, rate limit, sanitising (+ tests)
 - [ ] T5 iOS Core: Domain entities, protocols, use cases (+ tests)
 - [ ] T6 iOS Core: APIClient, DTOs, mappers, repositories (+ tests with stubbed URLProtocol)

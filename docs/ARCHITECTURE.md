@@ -55,6 +55,19 @@ All errors: `{error:{code, message, details?}}`
 Codes: `VALIDATION_ERROR` (400), `NOT_FOUND` (404), `UPSTREAM_UNAVAILABLE` (502), `RATE_LIMITED` (429), `INTERNAL` (500).
 iOS maps these to `AppError` with user-friendly messages.
 
+## API examples
+Trimmed responses captured by a live smoke test against the Fake Store API:
+
+| Request | Response |
+|---|---|
+| `curl -i http://localhost:3000/api/v1/health` | `200 {"status":"ok"}` |
+| `curl -i http://localhost:3000/api/v1/products/featured` | `200 Product[5]`, IDs `[12, 11, 3, 18, 5]` |
+| `curl -i http://localhost:3000/api/v1/categories` | `200 ["electronics","jewelery","men's clothing","women's clothing"]` |
+| `curl -i "http://localhost:3000/api/v1/categories/men's%20clothing/products"` | `200 {"category":"men's clothing","topRated":3,"others":1}` |
+| `curl -i 'http://localhost:3000/api/v1/products/search?q=jacket'` | `200 Product[4]`, IDs `[3, 17, 16, 15]` |
+| `curl -i http://localhost:3000/api/v1/products/1` | `200 Product`, ID `1`, title `Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops` |
+| `curl -i http://localhost:3000/api/v1/products/9999` | `404 {"error":{"code":"NOT_FOUND","message":"Product not found"}}` |
+
 ## Security basics
 Validate with zod at the edge. Rate-limit `/enquiries`. Sanitise CR/LF out of any value placed in email headers. Escape user text in HTML email. CORS minimal. No secrets in code. ATS exception for `localhost` only.
 
