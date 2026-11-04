@@ -12,9 +12,11 @@ private enum CategoryPreviewScenario: Sendable {
 private struct CategoryPreviewHost: View {
     @State private var viewModel: CategoryViewModel
     @State private var path: [Route] = []
+    private let repository: CategoryPreviewRepository
 
     init(scenario: CategoryPreviewScenario) {
         let repository = CategoryPreviewRepository(scenario: scenario)
+        self.repository = repository
         _viewModel = State(
             initialValue: CategoryViewModel(
                 categoryName: "men's clothing",
@@ -33,7 +35,13 @@ private struct CategoryPreviewHost: View {
                     case .product(let id):
                         ProductPlaceholderView(id: id)
                     case .search(let query):
-                        SearchPlaceholderView(query: query)
+                        SearchResultsView(
+                            viewModel: SearchResultsViewModel(
+                                initialQuery: query,
+                                searchProducts: SearchProductsUseCase(repository: repository)
+                            ),
+                            path: $path
+                        )
                     }
                 }
         }

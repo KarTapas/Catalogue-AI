@@ -60,7 +60,7 @@ struct CategoryView: View {
             ProductGrid(products: products) { product, position in
                 ProductTile(
                     product: product,
-                    action: { path.append(.product(product.id)) },
+                    action: { path.append(ProductRoute.route(for: product)) },
                     rank: showsRank ? position : nil
                 )
             }

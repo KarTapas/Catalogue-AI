@@ -69,7 +69,7 @@ struct HomeView: View {
             ) { products in
                 ProductGrid(products: products) { product, _ in
                     ProductTile(product: product) {
-                        path.append(.product(product.id))
+                        path.append(ProductRoute.route(for: product))
                     }
                 }
             }

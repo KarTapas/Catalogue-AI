@@ -43,7 +43,13 @@ private struct HomePreviewHost: View {
                     case .product(let id):
                         ProductPlaceholderView(id: id)
                     case .search(let query):
-                        SearchPlaceholderView(query: query)
+                        SearchResultsView(
+                            viewModel: SearchResultsViewModel(
+                                initialQuery: query,
+                                searchProducts: SearchProductsUseCase(repository: repository)
+                            ),
+                            path: $path
+                        )
                     }
                 }
         }

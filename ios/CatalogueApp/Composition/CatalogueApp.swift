@@ -34,19 +34,29 @@ struct CatalogueApp: App {
 
     #if DEBUG
     private static func debugPreviewRoute() -> Route? {
-        let prefix = "category:"
-        guard
-            let route = ProcessInfo.processInfo.environment["UI_PREVIEW_ROUTE"],
-            route.hasPrefix(prefix)
-        else {
+        guard let route = ProcessInfo.processInfo.environment["UI_PREVIEW_ROUTE"] else {
             return nil
         }
 
-        let category = String(route.dropFirst(prefix.count))
-        guard !category.isEmpty else {
-            return nil
+        let categoryPrefix = "category:"
+        if route.hasPrefix(categoryPrefix) {
+            let category = String(route.dropFirst(categoryPrefix.count))
+            guard !category.isEmpty else {
+                return nil
+            }
+            return .category(category)
         }
-        return .category(category)
+
+        let searchPrefix = "search:"
+        if route.hasPrefix(searchPrefix) {
+            let query = String(route.dropFirst(searchPrefix.count))
+            guard !query.isEmpty else {
+                return nil
+            }
+            return .search(query)
+        }
+
+        return nil
     }
     #endif
 }

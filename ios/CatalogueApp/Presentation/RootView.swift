@@ -11,6 +11,7 @@ struct RootView: View {
     @State private var path: [Route]
     @State private var viewModel: HomeViewModel
     private let getCategoryProducts: GetCategoryProductsUseCase
+    private let searchProducts: SearchProductsUseCase
 
     init(container: AppContainer, initialRoute: Route? = nil) {
         _path = State(initialValue: initialRoute.map { [$0] } ?? [])
@@ -21,6 +22,7 @@ struct RootView: View {
             )
         )
         getCategoryProducts = container.getCategoryProducts
+        searchProducts = container.searchProducts
     }
 
     var body: some View {
@@ -41,7 +43,13 @@ struct RootView: View {
                     case .product(let id):
                         ProductPlaceholderView(id: id)
                     case .search(let query):
-                        SearchPlaceholderView(query: query)
+                        SearchResultsView(
+                            viewModel: SearchResultsViewModel(
+                                initialQuery: query,
+                                searchProducts: searchProducts
+                            ),
+                            path: $path
+                        )
                     }
                 }
         }

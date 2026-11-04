@@ -11,7 +11,7 @@ Do them in order. One task per PR-sized change. Each follows AGENTS.md workflow.
 - [x] T7 iOS App: DesignSystem, AppContainer, Config, ATS localhost exception
 - [x] T8 iOS: Home (featured + categories)
 - [x] T9 iOS: Category page
-- [ ] T10 iOS: Search
+- [x] T10 iOS: Search
 - [ ] T11 iOS: Product detail
 - [ ] T12 iOS: Enquiry form + Thank you
 - [ ] T13 CI (backend tests, swiftlint, swift test, xcodebuild test)

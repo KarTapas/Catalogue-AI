@@ -39,7 +39,7 @@ struct LoadStateView<Value, Content: View>: View {
                     VStack(spacing: Spacing.s8) {
                         Image(systemName: "tray")
                             .accessibilityHidden(true)
-                        Text(emptyMessage)
+                        Text(verbatim: emptyMessage)
                             .font(Typography.body)
                     }
                     .foregroundStyle(Palette.textSecondary)

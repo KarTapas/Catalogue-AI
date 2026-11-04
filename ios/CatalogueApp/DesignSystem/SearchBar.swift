@@ -4,6 +4,19 @@ struct SearchBar: View {
     @Binding var text: String
     let canSearch: Bool
     let onSearch: () -> Void
+    let validationMessage: String?
+
+    init(
+        text: Binding<String>,
+        canSearch: Bool,
+        onSearch: @escaping () -> Void,
+        validationMessage: String? = nil
+    ) {
+        _text = text
+        self.canSearch = canSearch
+        self.onSearch = onSearch
+        self.validationMessage = validationMessage
+    }
 
     var body: some View {
         VStack(spacing: Spacing.s8) {
@@ -32,6 +45,13 @@ struct SearchBar: View {
                 Palette.surface,
                 in: RoundedRectangle(cornerRadius: Radius.r12)
             )
+
+            if let validationMessage {
+                Text(verbatim: validationMessage)
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.error)
+                    .padding(.horizontal, Spacing.s4)
+            }
 
             PrimaryButton(title: "Search", action: performSearch)
                 .disabled(!canSearch)
