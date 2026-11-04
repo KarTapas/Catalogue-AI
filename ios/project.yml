@@ -75,5 +75,7 @@ schemes:
       config: Debug
     test:
       config: Debug
+      environmentVariables:
+        CATALOGUE_DISABLE_AUTOMATIC_HOME_LOAD: "1"
       targets:
         - CatalogueAppTests

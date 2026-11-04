@@ -55,7 +55,7 @@ struct LoadStateView<Value, Content: View>: View {
                 .padding(Spacing.s24)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
     }
 }
 

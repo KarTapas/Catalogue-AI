@@ -7,35 +7,34 @@ enum Route: Hashable {
 }
 
 struct RootView: View {
-    let container: AppContainer
     @State private var path: [Route] = []
+    @State private var viewModel: HomeViewModel
+
+    init(container: AppContainer) {
+        _viewModel = State(
+            initialValue: HomeViewModel(
+                getFeaturedProducts: container.getFeaturedProducts,
+                getCategories: container.getCategories
+            )
+        )
+    }
 
     var body: some View {
         NavigationStack(path: $path) {
-            HomePlaceholderView()
+            HomeView(viewModel: viewModel, path: $path)
                 .navigationTitle("Catalogue")
                 .navigationBarTitleDisplayMode(.large)
                 .navigationDestination(for: Route.self) { route in
                     switch route {
                     case .category(let name):
-                        Text(name)
+                        CategoryPlaceholderView(category: name)
                     case .product(let id):
-                        Text("Product \(id)")
+                        ProductPlaceholderView(id: id)
                     case .search(let query):
-                        Text(query)
+                        SearchPlaceholderView(query: query)
                     }
                 }
         }
         .tint(Palette.brand)
-    }
-}
-
-private struct HomePlaceholderView: View {
-    var body: some View {
-        Text("Catalogue")
-            .font(Typography.title)
-            .foregroundStyle(Palette.textPrimary)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Palette.background)
     }
 }
