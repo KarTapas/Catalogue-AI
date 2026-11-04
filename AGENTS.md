@@ -10,7 +10,7 @@ The app talks ONLY to our backend. Never call Fake Store API from iOS.
 ## Commands
 - Backend: `cd backend && npm test && npm run lint`
 - iOS core: `cd ios/CatalogueCore && swift test`
-- iOS app: `xcodebuild test -scheme CatalogueApp -destination 'platform=iOS Simulator,name=iPhone 16'`
+- iOS app: `xcodebuild test -scheme CatalogueApp -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.0'`
 - Run all: `docker compose up`
 
 ## Hard rules

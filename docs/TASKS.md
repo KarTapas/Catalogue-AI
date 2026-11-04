@@ -8,7 +8,7 @@ Do them in order. One task per PR-sized change. Each follows AGENTS.md workflow.
 - [x] T4 Backend: `EmailSender` port, Console + SMTP adapters, enquiry service + route, rate limit, sanitising (+ tests)
 - [x] T5 iOS Core: Domain entities, protocols, use cases (+ tests)
 - [x] T6 iOS Core: APIClient, DTOs, mappers, repositories (+ tests with stubbed URLProtocol)
-- [ ] T7 iOS App: DesignSystem, AppContainer, Config, ATS localhost exception
+- [x] T7 iOS App: DesignSystem, AppContainer, Config, ATS localhost exception
 - [ ] T8 iOS: Home (featured + categories)
 - [ ] T9 iOS: Category page
 - [ ] T10 iOS: Search

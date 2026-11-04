@@ -10,3 +10,9 @@ ios/
   CatalogueCore/
   CatalogueApp/
 ```
+
+## Regenerating the project
+
+```sh
+cd ios && xcodegen
+```
