@@ -7,8 +7,9 @@ RUN npm ci
 
 COPY tsconfig.json ./
 COPY src ./src
-RUN npm run build
+RUN npm run build && npm prune --omit=dev
 
+USER node
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["node", "dist/server.js"]

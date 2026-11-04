@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export class ConfigurationError extends Error {
+  constructor(details: string) {
+    super(`Invalid configuration: ${details}`);
+    this.name = "ConfigurationError";
+  }
+}
+
 const featuredIdsSchema = z.string().default("").transform((value, context) => {
   if (value.trim() === "") {
     return [];
@@ -86,7 +93,7 @@ export function parseConfig(
     const details = result.error.issues
       .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
       .join("; ");
-    throw new Error(`Invalid configuration: ${details}`);
+    throw new ConfigurationError(details);
   }
 
   return {

@@ -2,11 +2,27 @@ import { FakeStoreProductSource } from "./adapters/fakeStoreProductSource.js";
 import { ConsoleEmailSender } from "./adapters/consoleEmailSender.js";
 import { SmtpEmailSender } from "./adapters/smtpEmailSender.js";
 import { buildApp } from "./app.js";
-import { parseConfig } from "./config.js";
+import { ConfigurationError, parseConfig } from "./config.js";
 import { CatalogueService } from "./services/catalogueService.js";
 import { EnquiryService } from "./services/enquiryService.js";
 
-const config = parseConfig();
+function loadConfig() {
+  try {
+    return parseConfig();
+  } catch (error) {
+    if (!(error instanceof ConfigurationError)) {
+      throw error;
+    }
+
+    console.error(error.message);
+    const runtime = globalThis as typeof globalThis & {
+      process: { exit(code: number): never };
+    };
+    return runtime.process.exit(1);
+  }
+}
+
+const config = loadConfig();
 const productSource = new FakeStoreProductSource({
   baseUrl: config.fakeStoreBaseUrl,
 });

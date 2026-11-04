@@ -64,7 +64,9 @@ describe("parseConfig", () => {
   });
 
   it("requires an email from address and a complete optional SMTP credential pair", () => {
-    expect(() => parseConfig({})).toThrow(/EMAIL_FROM/);
+    expect(() => parseConfig({})).toThrow(
+      /Invalid configuration: EMAIL_FROM/,
+    );
     expect(
       () =>
         parseConfig({
