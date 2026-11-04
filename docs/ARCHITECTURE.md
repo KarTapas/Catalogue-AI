@@ -68,6 +68,18 @@ Trimmed responses captured by a live smoke test against the Fake Store API:
 | `curl -i http://localhost:3000/api/v1/products/1` | `200 Product`, ID `1`, title `Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops` |
 | `curl -i http://localhost:3000/api/v1/products/9999` | `404 {"error":{"code":"NOT_FOUND","message":"Product not found"}}` |
 
+### Enquiries
+
+`POST /api/v1/enquiries` accepts `productId`, `name`, `email`, optional `phone`, and `message`. It emails the configured sales inbox without storing the enquiry; successful delivery returns `202 {"id":"..."}`. Validation errors return `400 VALIDATION_ERROR`, an unknown product returns `404 NOT_FOUND`, delivery failures return a generic `502 UPSTREAM_UNAVAILABLE`, and the route is limited to five requests per minute per IP (`429 RATE_LIMITED`).
+
+Requests and trimmed responses captured by the live console-email smoke test:
+
+| Request | Response |
+|---|---|
+| `curl -i -X POST http://localhost:3000/api/v1/enquiries -H 'content-type: application/json' -d '{"productId":1,"name":"Live Smoke Test","email":"customer@example.test","phone":"+1 (555) 010-1234","message":"Smoke enquiry"}'` | `202 {"id":"77296a67-68e8-462a-bacd-71916df499fd"}` |
+| `curl -i -X POST http://localhost:3000/api/v1/enquiries -H 'content-type: application/json' -d '{"productId":1,"name":"Live Smoke Test","email":"not-an-email","message":"Smoke enquiry"}'` | `400 {"error":{"code":"VALIDATION_ERROR","message":"Invalid request","details":[{"field":"email","message":"Invalid value"}]}}` |
+| `curl -i -X POST http://localhost:3000/api/v1/enquiries -H 'content-type: application/json' -d '{"productId":9999,"name":"Live Smoke Test","email":"customer@example.test","message":"Smoke enquiry"}'` | `404 {"error":{"code":"NOT_FOUND","message":"Product not found"}}` |
+
 ## Security basics
 Validate with zod at the edge. Rate-limit `/enquiries`. Sanitise CR/LF out of any value placed in email headers. Escape user text in HTML email. CORS minimal. No secrets in code. ATS exception for `localhost` only.
 

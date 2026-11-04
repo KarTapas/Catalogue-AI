@@ -10,8 +10,8 @@ export class NotFoundError extends Error {
 export class UpstreamUnavailableError extends Error {
   readonly code = "UPSTREAM_UNAVAILABLE" as const;
 
-  constructor() {
-    super("Product source unavailable");
+  constructor(message = "Product source unavailable") {
+    super(message);
     this.name = "UpstreamUnavailableError";
   }
 }

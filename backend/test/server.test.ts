@@ -3,6 +3,7 @@ import { buildApp } from "../src/app.js";
 import { NotFoundError } from "../src/domain/errors.js";
 import type { ProductSource } from "../src/domain/ports.js";
 import { CatalogueService } from "../src/services/catalogueService.js";
+import { EnquiryService } from "../src/services/enquiryService.js";
 
 describe("GET /api/v1/health", () => {
   it("returns an ok status", async () => {
@@ -16,7 +17,13 @@ describe("GET /api/v1/health", () => {
       productSource,
       featuredIds: [],
     });
-    const app = buildApp({ catalogueService, logger: false });
+    const enquiryService = new EnquiryService({
+      productSource,
+      emailSender: { send: () => Promise.resolve() },
+      salesInbox: "sales@example.test",
+      emailFrom: "catalogue@example.test",
+    });
+    const app = buildApp({ catalogueService, enquiryService, logger: false });
 
     try {
       const response = await app.inject({

@@ -13,6 +13,7 @@ import {
 import type { ProductSource } from "../src/domain/ports.js";
 import type { Product } from "../src/domain/product.js";
 import { CatalogueService } from "../src/services/catalogueService.js";
+import { EnquiryService } from "../src/services/enquiryService.js";
 import { catalogueProducts } from "./fixtures/catalogueProducts.js";
 
 type ErrorResponse = {
@@ -58,6 +59,12 @@ function makeApp(
 ): ReturnType<typeof buildApp> {
   return buildApp({
     catalogueService: new CatalogueService({ productSource, featuredIds }),
+    enquiryService: new EnquiryService({
+      productSource,
+      emailSender: { send: () => Promise.resolve() },
+      salesInbox: "sales@example.test",
+      emailFrom: "catalogue@example.test",
+    }),
     logger: false,
   });
 }

@@ -1,7 +1,10 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
+import type { Enquiry } from "../domain/enquiry.js";
+import { ValidationError } from "../domain/errors.js";
 import type { Product } from "../domain/product.js";
 import type { CatalogueService } from "../services/catalogueService.js";
+import type { EnquiryService } from "../services/enquiryService.js";
 
 const productIdParamsSchema = z.object({
   id: z
@@ -18,6 +21,37 @@ const categoryParamsSchema = z.object({
 const searchQuerySchema = z.object({
   q: z.string().trim().min(2).max(100),
 });
+
+const controlCharacters = /[\u0000-\u001F\u007F-\u009F]/;
+const controlCharactersExceptNewlines =
+  /[\u0000-\u0009\u000B\u000C\u000E-\u001F\u007F-\u009F]/;
+
+const enquiryBodySchema = z.object({
+  productId: z.number().int().positive(),
+  name: z
+    .string()
+    .refine((value) => !controlCharacters.test(value))
+    .trim()
+    .min(1)
+    .max(100),
+  email: z.string().email().max(254),
+  phone: z
+    .string()
+    .max(30)
+    .regex(/^[0-9+() \-]*$/)
+    .optional(),
+  message: z
+    .string()
+    .refine((value) => !controlCharactersExceptNewlines.test(value))
+    .trim()
+    .min(1)
+    .max(2000),
+});
+
+export type EnquiryRateLimitOptions = {
+  max: number;
+  timeWindowMs: number;
+};
 
 function parseInput<T>(schema: z.ZodType<T>, input: unknown): T {
   const result = schema.safeParse(input);
@@ -48,6 +82,8 @@ function serializeProduct(product: Product): Product {
 export function registerRoutes(
   app: FastifyInstance,
   catalogueService: CatalogueService,
+  enquiryService: EnquiryService,
+  enquiryRateLimit: EnquiryRateLimitOptions,
 ): void {
   app.get("/api/v1/health", () => ({ status: "ok" }));
 
@@ -81,4 +117,35 @@ export function registerRoutes(
     const product = await catalogueService.getProduct(id);
     return serializeProduct(product);
   });
+
+  app.post(
+    "/api/v1/enquiries",
+    {
+      bodyLimit: 10 * 1024,
+      config: {
+        rateLimit: {
+          max: enquiryRateLimit.max,
+          timeWindow: enquiryRateLimit.timeWindowMs,
+        },
+      },
+      onRequest: (request, _reply, done) => {
+        const contentType = request.headers["content-type"]
+          ?.split(";")[0]
+          ?.trim()
+          .toLowerCase();
+        if (contentType !== "application/json") {
+          done(
+            new ValidationError("Content-Type must be application/json"),
+          );
+          return;
+        }
+        done();
+      },
+    },
+    async (request, reply) => {
+      const enquiry = parseInput<Enquiry>(enquiryBodySchema, request.body);
+      const result = await enquiryService.submit(enquiry);
+      return reply.code(202).send(result);
+    },
+  );
 }

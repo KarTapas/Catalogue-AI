@@ -38,10 +38,24 @@ const environmentSchema = z.object({
     .url()
     .default("https://fakestoreapi.com"),
   FEATURED_IDS: featuredIdsSchema,
-  SALES_INBOX: z.string().email().default("sales@example.com"),
-  EMAIL_PROVIDER: z.enum(["mailpit", "smtp"]).default("mailpit"),
+  SALES_INBOX: z.string().email().default("sales@example.test"),
+  EMAIL_FROM: z.string().email(),
+  EMAIL_PROVIDER: z.enum(["console", "smtp"]).default("console"),
   SMTP_HOST: z.string().min(1).default("mailpit"),
   SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(1025),
+  SMTP_USER: z.string().min(1).optional(),
+  SMTP_PASS: z.string().min(1).optional(),
+}).superRefine((environment, context) => {
+  if (
+    (environment.SMTP_USER === undefined) !==
+    (environment.SMTP_PASS === undefined)
+  ) {
+    context.addIssue({
+      code: "custom",
+      path: ["SMTP_USER"],
+      message: "SMTP_USER and SMTP_PASS must be configured together",
+    });
+  }
 });
 
 export type Config = {
@@ -49,9 +63,12 @@ export type Config = {
   fakeStoreBaseUrl: string;
   featuredIds: number[];
   salesInbox: string;
-  emailProvider: "mailpit" | "smtp";
+  emailFrom: string;
+  emailProvider: "console" | "smtp";
   smtpHost: string;
   smtpPort: number;
+  smtpUser?: string;
+  smtpPass?: string;
 };
 
 function getRuntimeEnvironment(): Record<string, string | undefined> {
@@ -77,8 +94,15 @@ export function parseConfig(
     fakeStoreBaseUrl: result.data.FAKESTORE_BASE_URL,
     featuredIds: result.data.FEATURED_IDS,
     salesInbox: result.data.SALES_INBOX,
+    emailFrom: result.data.EMAIL_FROM,
     emailProvider: result.data.EMAIL_PROVIDER,
     smtpHost: result.data.SMTP_HOST,
     smtpPort: result.data.SMTP_PORT,
+    ...(result.data.SMTP_USER === undefined
+      ? {}
+      : { smtpUser: result.data.SMTP_USER }),
+    ...(result.data.SMTP_PASS === undefined
+      ? {}
+      : { smtpPass: result.data.SMTP_PASS }),
   };
 }

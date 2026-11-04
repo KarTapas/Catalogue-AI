@@ -6,16 +6,25 @@ import {
 } from "../domain/errors.js";
 import { ZodError } from "zod";
 
+export class RateLimitExceededError extends Error {
+  readonly statusCode = 429;
+
+  constructor() {
+    super("Too many requests");
+    this.name = "RateLimitExceededError";
+  }
+}
+
 type ErrorDetail = {
   field: string;
   message: string;
 };
 
-function isBadRequestError(error: unknown): boolean {
+function hasStatusCode(error: unknown, statusCode: number): boolean {
   return (
     error instanceof Error &&
     "statusCode" in error &&
-    error.statusCode === 400
+    error.statusCode === statusCode
   );
 }
 
@@ -63,7 +72,20 @@ export function registerErrorHandler(app: FastifyInstance): void {
       });
     }
 
-    if (isBadRequestError(error)) {
+    if (
+      error instanceof RateLimitExceededError ||
+      hasStatusCode(error, 429)
+    ) {
+      return reply.code(429).send({
+        error: { code: "RATE_LIMITED", message: "Too many requests" },
+      });
+    }
+
+    if (
+      hasStatusCode(error, 400) ||
+      hasStatusCode(error, 413) ||
+      hasStatusCode(error, 415)
+    ) {
       return reply.code(400).send({
         error: {
           code: "VALIDATION_ERROR",
