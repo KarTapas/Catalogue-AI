@@ -33,7 +33,12 @@ private struct CategoryPreviewHost: View {
                     case .category(let category):
                         Text("Category: \(category)")
                     case .product(let id):
-                        ProductPlaceholderView(id: id)
+                        ProductDetailView(
+                            viewModel: ProductDetailViewModel(
+                                productID: id,
+                                getProduct: GetProductUseCase(repository: repository)
+                            )
+                        )
                     case .search(let query):
                         SearchResultsView(
                             viewModel: SearchResultsViewModel(

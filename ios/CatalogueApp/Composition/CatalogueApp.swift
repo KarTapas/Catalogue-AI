@@ -56,6 +56,15 @@ struct CatalogueApp: App {
             return .search(query)
         }
 
+        let productPrefix = "product:"
+        if route.hasPrefix(productPrefix) {
+            let rawID = String(route.dropFirst(productPrefix.count))
+            guard let productID = Int(rawID) else {
+                return nil
+            }
+            return .product(productID)
+        }
+
         return nil
     }
     #endif

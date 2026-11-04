@@ -12,7 +12,7 @@ Do them in order. One task per PR-sized change. Each follows AGENTS.md workflow.
 - [x] T8 iOS: Home (featured + categories)
 - [x] T9 iOS: Category page
 - [x] T10 iOS: Search
-- [ ] T11 iOS: Product detail
+- [x] T11 iOS: Product detail
 - [ ] T12 iOS: Enquiry form + Thank you
 - [ ] T13 CI (backend tests, swiftlint, swift test, xcodebuild test)
 - [ ] T14 Review pass with Reviewer + Security agents; fix findings

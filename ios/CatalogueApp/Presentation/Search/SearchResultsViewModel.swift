@@ -34,6 +34,7 @@ final class SearchResultsViewModel {
     var resultSummary: String? {
         guard
             case .loaded(let products) = results,
+            products.isEmpty == false,
             let submittedQuery
         else {
             return nil

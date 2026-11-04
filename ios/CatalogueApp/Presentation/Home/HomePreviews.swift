@@ -41,7 +41,12 @@ private struct HomePreviewHost: View {
                             path: $path
                         )
                     case .product(let id):
-                        ProductPlaceholderView(id: id)
+                        ProductDetailView(
+                            viewModel: ProductDetailViewModel(
+                                productID: id,
+                                getProduct: GetProductUseCase(repository: repository)
+                            )
+                        )
                     case .search(let query):
                         SearchResultsView(
                             viewModel: SearchResultsViewModel(

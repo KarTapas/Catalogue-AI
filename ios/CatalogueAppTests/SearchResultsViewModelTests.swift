@@ -94,7 +94,7 @@ func zeroResultsRemainLoadedAndShowTheEmptyMessage() async {
     await viewModel.search()
 
     #expect(viewModel.results == .loaded([]))
-    #expect(viewModel.resultSummary == "0 results for “zzzzqq”")
+    #expect(viewModel.resultSummary == nil)
     #expect(viewModel.emptyMessage == "No results for “zzzzqq”")
 }
 
