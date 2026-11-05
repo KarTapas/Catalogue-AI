@@ -58,19 +58,40 @@ Then open `ios/CatalogueApp.xcodeproj` in Xcode and run on an iPhone Simulator. 
 
 ## How it was tested
 
-- **Backend:** `cd backend && npm test && npm run lint && npm run build` — 83 tests passed; lint and build passed.
-- **Clean-copy startup:** `npm run start:local` with `.env` and `npm start` with environment-only configuration both returned health `200`; without configuration, startup exited `1` with a clear missing-`EMAIL_FROM` message and no stack trace.
-- **CatalogueCore:** `cd ios/CatalogueCore && swift test` — 33 test cases total; 32 passed and the optional live contract test was skipped. The earlier configured live-contract result is documented in `docs/MEMORY.md` and was not rerun in this change.
-- **iOS app:** `xcodebuild -project ios/CatalogueApp.xcodeproj -scheme CatalogueApp -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.0' -derivedDataPath ios/build/DerivedData build test` — 65 tests passed.
-- **Release configuration:** Simulator build passed with `ENABLE_TESTABILITY=YES` supplied on the command line; `UI_PREVIEW_ROUTE` and `enquiry-submit` were absent from the Release executable.
-- **Live API contract:** previously passed against the local backend and its Fake Store adapter, including featured products, categories, category products, search, product detail and not-found handling; not rerun in this change.
-- **Mailpit E2E:** the earlier Mailpit v1.33.0 result is recorded in [docs/ARCHITECTURE.md](ARCHITECTURE.md#verified-end-to-end); it was not rerun in this change.
-- **Docker Compose (author report, 2026-11-05):** `docker compose up --build` started the backend; the iOS app's requests for categories, featured products, and category pages all returned HTTP 200; an app-submitted enquiry email was visible in Mailpit at <http://localhost:8025>.
-- **GitHub Actions:** not run; remains unverified.
+The current unit and Simulator test results below were run for this documentation pass. Earlier live checks and the author's Compose run are labeled separately.
+
+| Check | Result |
+|---|---|
+| Backend tests, lint, and build | `cd backend && npm test && npm run lint && npm run build` — 83 tests passed; lint and build exited successfully |
+| Clean-copy startup | Earlier check: `npm run start:local` with `.env` and `npm start` with environment-only configuration returned health 200; without configuration, startup exited 1 with a clear missing-`EMAIL_FROM` message and no stack trace |
+| CatalogueCore package tests | `cd ios/CatalogueCore && swift test` — 33 total; 32 passed and the optional live contract test was skipped |
+| iOS app tests | `xcodebuild -project ios/CatalogueApp.xcodeproj -scheme CatalogueApp -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.0' -derivedDataPath ios/build/DerivedData build test` — 65 passed, 0 failed; `TEST SUCCEEDED` |
+| Release configuration | Earlier Simulator build passed with `ENABLE_TESTABILITY=YES`; `UI_PREVIEW_ROUTE` and `enquiry-submit` were absent from the Release executable |
+| Live API contract | Earlier configured run passed all 31 package tests, including featured products, categories, category products, search, product detail, and not-found handling against the local backend/Fake Store adapter; not rerun in this documentation pass |
+| Mailpit end to end | Earlier Mailpit v1.33.0 run returned 202 and delivered a test email, as recorded in [docs/ARCHITECTURE.md](ARCHITECTURE.md#verified-end-to-end); not rerun in this documentation pass |
+| Docker Compose (author report, 2026-11-05) | I ran `docker compose up --build` once; the backend started, app requests for categories, featured products, and category pages returned 200, and an app-submitted enquiry email appeared in Mailpit at <http://localhost:8025> |
+| Simulator screenshots | Captured during earlier Simulator work under `docs/screenshots/`; not recaptured in this documentation pass |
+| GitHub Actions | Not run; unverified |
+| Physical device | Not tested; unverified |
+| VoiceOver | Not tested |
+| Authenticated SMTP TLS | Not verified with a real email provider |
 
 ## AI usage
 
-The repository history contains Copilot co-author trailers. Per the author, GitHub Copilot CLI was used for implementation and a separate chat assistant was used for planning and writing prompts; model names and versions are not recorded in the repository. See [AI_USAGE.md](../AI_USAGE.md) for the draft account.
+I used GitHub Copilot CLI (agent) to build the code, tests, and docs under my direction. The model was the CLI default or my selection; its exact version was not recorded. I also used a separate chat assistant (Claude, via claude.ai) for planning, writing task prompts, and triaging review findings; its exact model version was not recorded. See [AI_USAGE.md](../AI_USAGE.md) for the prompts and self-review.
+
+## Time spent
+
+| Phase | Time |
+|---|---|
+| Elapsed span (first to last commit) | 1d 5h53m53s |
+| Planning | Not measured; it happened mostly before the first commit and in the chat assistant |
+| Building | 5h24m02s, estimated from commit timestamps and subject categories |
+| Testing | 20m25s, estimated from commit timestamps and subject categories |
+| Reviewing | 3h50m46s, estimated from commit timestamps and subject categories |
+| Total | 9h35m13s of active time seen in commits |
+
+I grouped commits into sessions, starting a new session after a gap of more than 90 minutes, and summed each session from its first to last commit. I divided each session's span among building, testing, and reviewing in proportion to the number of commits in those subject-based categories. The elapsed span is the time from the first to last commit; the phase breakdown is an estimate from commit timestamps, not a time log. Actual effort may differ, and the active-time total exceeds the suggested 2-3 hour time-box.
 
 ## Known limitations
 
@@ -78,10 +99,10 @@ The repository history contains Copilot co-author trailers. Per the author, GitH
 - Product metadata uses the backend, but product images are loaded directly by SwiftUI from the supplied image URL; see accepted finding R2/S1.
 - The PRD targets Simulator, and only the Simulator was exercised; the app has no runtime Simulator-only check. Physical-device and VoiceOver testing were not performed. Dynamic Type was checked only in the captured screenshots.
 - GitHub Actions remains unverified. SwiftLint is not configured.
-- **TODO(author):** Add any project-specific limitations discovered during review.
+- Authenticated SMTP TLS was not verified against a real provider. I did not record additional project-specific limitations beyond those listed here.
 
 ## What I would do next
 
-Candidate follow-ups are persistent enquiry storage, a production catalogue source, VoiceOver/device testing, SwiftLint, and running the GitHub Actions checks. **TODO(author):** Prioritize these based on product needs and explain the rationale.
+My first three follow-ups are to persist enquiries so email failure does not lose them, run GitHub Actions with a per-job repository-root working directory, and add a backend image proxy with an allow-list and a failure UI. See [DECISIONS.md](../DECISIONS.md#what-i-would-do-next-with-another-day) for the remaining risk-ordered list.
 
 Related drafts and reports: [DECISIONS.md](../DECISIONS.md) · [AI_USAGE.md](../AI_USAGE.md) · [Reviewer report](reviews/REVIEW.md) · [Security report](reviews/SECURITY.md).
