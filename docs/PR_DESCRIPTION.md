@@ -54,7 +54,7 @@ npm run build
 npm run start:local
 ```
 
-Then open `ios/CatalogueApp.xcodeproj` in Xcode and run on an iPhone Simulator. See [README.md](../README.md) for Docker, SMTP/Mailpit, configuration and test instructions. Docker startup is not verified on this machine.
+Then open `ios/CatalogueApp.xcodeproj` in Xcode and run on an iPhone Simulator. See [README.md](../README.md) for Docker, SMTP/Mailpit, configuration and test instructions. The author reported one manual Compose run on their machine on 2026-11-05; see the result under "How it was tested."
 
 ## How it was tested
 
@@ -65,7 +65,8 @@ Then open `ios/CatalogueApp.xcodeproj` in Xcode and run on an iPhone Simulator. 
 - **Release configuration:** Simulator build passed with `ENABLE_TESTABILITY=YES` supplied on the command line; `UI_PREVIEW_ROUTE` and `enquiry-submit` were absent from the Release executable.
 - **Live API contract:** previously passed against the local backend and its Fake Store adapter, including featured products, categories, category products, search, product detail and not-found handling; not rerun in this change.
 - **Mailpit E2E:** the earlier Mailpit v1.33.0 result is recorded in [docs/ARCHITECTURE.md](ARCHITECTURE.md#verified-end-to-end); it was not rerun in this change.
-- **GitHub Actions and Docker:** not run here; both remain unverified.
+- **Docker Compose (author report, 2026-11-05):** `docker compose up --build` started the backend; the iOS app's requests for categories, featured products, and category pages all returned HTTP 200; an app-submitted enquiry email was visible in Mailpit at <http://localhost:8025>.
+- **GitHub Actions:** not run; remains unverified.
 
 ## AI usage
 
@@ -76,11 +77,11 @@ The repository history contains Copilot co-author trailers. Per the author, GitH
 - Enquiries are email-only with no persistence; Fake Store is a proof-of-concept upstream.
 - Product metadata uses the backend, but product images are loaded directly by SwiftUI from the supplied image URL; see accepted finding R2/S1.
 - The PRD targets Simulator, and only the Simulator was exercised; the app has no runtime Simulator-only check. Physical-device and VoiceOver testing were not performed. Dynamic Type was checked only in the captured screenshots.
-- Docker and GitHub Actions remain unverified. SwiftLint is not configured.
+- GitHub Actions remains unverified. SwiftLint is not configured.
 - **TODO(author):** Add any project-specific limitations discovered during review.
 
 ## What I would do next
 
-Candidate follow-ups are persistent enquiry storage, a production catalogue source, VoiceOver/device testing, SwiftLint, and running the Docker and GitHub Actions checks. **TODO(author):** Prioritize these based on product needs and explain the rationale.
+Candidate follow-ups are persistent enquiry storage, a production catalogue source, VoiceOver/device testing, SwiftLint, and running the GitHub Actions checks. **TODO(author):** Prioritize these based on product needs and explain the rationale.
 
 Related drafts and reports: [DECISIONS.md](../DECISIONS.md) · [AI_USAGE.md](../AI_USAGE.md) · [Reviewer report](reviews/REVIEW.md) · [Security report](reviews/SECURITY.md).

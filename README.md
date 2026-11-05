@@ -51,7 +51,7 @@ Open the Mailpit inbox at <http://localhost:8025>. Mailpit listens for SMTP on p
 docker compose up --build
 ```
 
-The backend is at <http://localhost:3000/api/v1/health>; the Mailpit inbox is at <http://localhost:8025>. Compose was not run here, and the repository records contain no successful Compose run, so this path remains unverified.
+The backend is at <http://localhost:3000/api/v1/health>; the Mailpit inbox is at <http://localhost:8025>. The author ran `docker compose up --build` on their machine on 2026-11-05. The backend container started; the app's requests for categories, featured products, and category pages all returned HTTP 200; and an enquiry submitted in the app produced an email visible in Mailpit at <http://localhost:8025>. This is a single author-reported run.
 
 ## 3. Check the backend before opening the app
 
@@ -126,13 +126,16 @@ cd ios/CatalogueCore
 swift test
 ```
 
-The app build and tests use the Simulator command from section 4. These counts are from the runs performed for this README:
+The app build and tests use the Simulator command from section 4. These counts and verification notes reflect the recorded runs for this README:
 
-| Suite | Result |
+| Check | Result |
 |---|---|
 | Backend | 83 tests passed; lint and TypeScript build passed |
 | CatalogueCore | 33 tests total: 32 passed and the optional live contract test was skipped |
 | iOS app | 65 tests passed; `xcodebuild` reported `TEST SUCCEEDED` |
+| Docker Compose | Author-reported run on 2026-11-05: backend started; app requests for categories, featured products, and category pages returned 200; an app-submitted enquiry email appeared in Mailpit at <http://localhost:8025> |
+| GitHub Actions | Not run; unverified |
+| Physical device | Not tested; unverified |
 
 ## Challenges faced and how they were handled
 
@@ -150,7 +153,7 @@ The app build and tests use the Simulator command from section 4. These counts a
 | iOS CI project path (R1) | The iOS CI step ran from `backend/` but used a repository-root project path. | The review checked path resolution from the job working directory. | Fixed the CI project path in commit `6917f81`; GitHub Actions itself remains unverified. | [R1, REVIEW.md](docs/reviews/REVIEW.md) |
 | Client/server string lengths (R3) | Swift grapheme-cluster counts could accept strings that the backend rejects by UTF-16 length. | Review used repeated `e` plus combining acute accent as a counterexample. | Aligned client validation and the visible counter to UTF-16 code units. | [R3, REVIEW.md](docs/reviews/REVIEW.md); commit `ce0ad8e` |
 | Product image loading (R2/S1) | Images load directly from Fake Store-provided URLs (`fakestoreapi.com` in the checked data) and may remain slow or show an unavailable placeholder on network failure. | Review noted `AsyncImage` bypasses `CatalogueData`; screenshots also showed image placeholders still loading. | `RemoteImage` shows loading and unavailable placeholders, but has no retry action. An image proxy is a next step and needs SSRF controls. | [R2, REVIEW.md](docs/reviews/REVIEW.md); [S1, SECURITY.md](docs/reviews/SECURITY.md); [MEMORY.md, 2026-11-04 22:50](docs/MEMORY.md) |
-| Docker Compose verification | Compose was not run in the earlier recorded review. Docker is now on PATH, but this task explicitly does not run it. | The review report and memory record no real Compose run; only `command -v docker` was checked now. | Keep Docker optional and label Path B unverified. | [S3, SECURITY.md](docs/reviews/SECURITY.md); [MEMORY.md, 2026-11-05 03:10](docs/MEMORY.md) |
+| Docker Compose verification | The author reported on 2026-11-05 that `docker compose up --build` started the backend, app requests for categories, featured products, and category pages returned 200, and an app-submitted enquiry email appeared in Mailpit. | The author reported the container startup, app responses, and visible Mailpit email. | Record the single manual run; GitHub Actions and physical-device use remain unverified. | Author report (2026-11-05); [S3, SECURITY.md](docs/reviews/SECURITY.md) |
 | Read-only review changed CI | A review pass that was meant to report only also edited `ci.yml`. | The change was noticed during the follow-up review and worktree inspection. | Tracked the path issue as R1 and made the fix in a separate commit. | [MEMORY.md, 2026-11-05 11:15](docs/MEMORY.md); commit `6917f81` |
 | R3/S2 task stopped early | A follow-up task skipped requested steps and incorrectly claimed no commit message was given. | The unfinished checklist was compared with the original prompt. | Resumed the remaining checks and recorded the fixes and documentation in separate commits. | [MEMORY.md, 2026-11-05 11:15](docs/MEMORY.md); commits `ce0ad8e` and `64b7908` |
 | Swift build errors during implementation | Builds exposed stale previews, missing returns/imports, duplicate test names, and unsupported accessibility modifiers. | Compiler diagnostics identified each issue. | Corrected the affected code and reran the relevant build and test commands. | [MEMORY.md, 2026-11-04 21:52, 22:15, 22:50; 2026-11-05 12:31](docs/MEMORY.md); commit `d087cb9` |
