@@ -15,11 +15,11 @@ public enum EnquiryValidator {
             fields["name"] = "Name must not contain control characters."
         } else if trimmedName.isEmpty {
             fields["name"] = "Enter your name."
-        } else if trimmedName.count > 100 {
+        } else if trimmedName.utf16.count > 100 {
             fields["name"] = "Name must be 100 characters or fewer."
         }
 
-        if enquiry.email.count > 254
+        if enquiry.email.utf16.count > 254
             || containsControlCharacters(enquiry.email)
             || enquiry.email.range(
                 of: emailPattern,
@@ -30,7 +30,7 @@ public enum EnquiryValidator {
         }
 
         if let phone = enquiry.phone {
-            if phone.count > 30 {
+            if phone.utf16.count > 30 {
                 fields["phone"] = "Phone number must be 30 characters or fewer."
             } else if !phone.unicodeScalars.allSatisfy(isAllowedPhoneScalar) {
                 fields["phone"] = "Use only digits, spaces, +, -, ( or ) in the phone number."
@@ -42,7 +42,7 @@ public enum EnquiryValidator {
             fields["message"] = "Message contains an unsupported control character."
         } else if trimmedMessage.isEmpty {
             fields["message"] = "Enter a message."
-        } else if trimmedMessage.count > 2_000 {
+        } else if trimmedMessage.utf16.count > 2_000 {
             fields["message"] = "Message must be 2,000 characters or fewer."
         }
 

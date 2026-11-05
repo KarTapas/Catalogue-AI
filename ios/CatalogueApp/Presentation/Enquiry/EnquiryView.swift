@@ -139,7 +139,7 @@ struct EnquiryView: View {
                 Text(verbatim: EnquiryText.messageCharacterCount(viewModel.message))
                     .font(Typography.caption)
                     .foregroundStyle(
-                        viewModel.message.count > EnquiryText.messageLimit
+                        viewModel.message.utf16.count > EnquiryText.messageLimit
                             ? Palette.error
                             : Palette.textSecondary
                     )

@@ -3,7 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import type { EmailMessage } from "../src/domain/ports.js";
 import { UpstreamUnavailableError } from "../src/domain/errors.js";
 import { ConsoleEmailSender } from "../src/adapters/consoleEmailSender.js";
-import { SmtpEmailSender } from "../src/adapters/smtpEmailSender.js";
+import {
+  buildTransportOptions,
+  SmtpEmailSender,
+} from "../src/adapters/smtpEmailSender.js";
 
 const emailMessage: EmailMessage = {
   to: "sales@example.test",
@@ -35,6 +38,46 @@ describe("ConsoleEmailSender", () => {
 });
 
 describe("SmtpEmailSender", () => {
+  it("does not require TLS without credentials", () => {
+    const options = buildTransportOptions({ host: "localhost", port: 1025 });
+
+    expect(options).toEqual({ host: "localhost", port: 1025 });
+    expect(options).not.toHaveProperty("requireTLS");
+  });
+
+  it("requires TLS when credentials are configured", () => {
+    const options = buildTransportOptions({
+      host: "smtp.example.test",
+      port: 587,
+      user: "sender",
+      pass: "password",
+    });
+
+    expect(options).toEqual({
+      host: "smtp.example.test",
+      port: 587,
+      auth: { user: "sender", pass: "password" },
+      requireTLS: true,
+    });
+  });
+
+  it("uses implicit TLS on port 465 when credentials are configured", () => {
+    const options = buildTransportOptions({
+      host: "smtp.example.test",
+      port: 465,
+      user: "sender",
+      pass: "password",
+    });
+
+    expect(options).toEqual({
+      host: "smtp.example.test",
+      port: 465,
+      auth: { user: "sender", pass: "password" },
+      requireTLS: true,
+      secure: true,
+    });
+  });
+
   it("sends through an injected Nodemailer JSON transport", async () => {
     const jsonTransport = nodemailer.createTransport({ jsonTransport: true });
     let serializedMessage = "";

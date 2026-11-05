@@ -171,7 +171,7 @@ enum EnquiryText {
     static let messageLimit = 2_000
 
     static func messageCharacterCount(_ message: String) -> String {
-        "\(message.count) / \(messageLimit) characters"
+        "\(message.utf16.count) / \(messageLimit) characters"
     }
 
     static func thankYouMessage(for title: String) -> String {

@@ -62,6 +62,40 @@ func enquiryValidatorRejectsEmptyLongAndControlledNames() {
 }
 
 @Test
+func enquiryValidatorUsesUtf16LengthForNameAndMessageBoundaries() {
+    let composedGrapheme = "e\u{0301}"
+    let fiftyOneGraphemes = String(repeating: composedGrapheme, count: 51)
+    let fiftyGraphemes = String(repeating: composedGrapheme, count: 50)
+    let thousandEmoji = String(repeating: "\u{1F600}", count: 1_000)
+    let thousandAndOneEmoji = String(repeating: "\u{1F600}", count: 1_001)
+
+    #expect(fiftyOneGraphemes.count == 51)
+    #expect(fiftyOneGraphemes.utf16.count == 102)
+    #expect(fiftyGraphemes.utf16.count == 100)
+    #expect(EnquiryValidator.validate(makeEnquiry(name: fiftyOneGraphemes))["name"] != nil)
+    #expect(EnquiryValidator.validate(makeEnquiry(name: fiftyGraphemes)).isEmpty)
+
+    #expect(thousandEmoji.utf16.count == 2_000)
+    #expect(thousandAndOneEmoji.utf16.count == 2_002)
+    #expect(EnquiryValidator.validate(makeEnquiry(message: thousandEmoji)).isEmpty)
+    #expect(EnquiryValidator.validate(makeEnquiry(message: thousandAndOneEmoji))["message"] != nil)
+}
+
+@Test
+func enquiryValidatorPreservesAsciiLengthBoundaries() {
+    let valid254Email = String(repeating: "a", count: 241) + "@example.test"
+    let valid30DigitPhone = String(repeating: "1", count: 30)
+
+    #expect(EnquiryValidator.validate(makeEnquiry(name: String(repeating: "A", count: 100))).isEmpty)
+    #expect(EnquiryValidator.validate(makeEnquiry(name: String(repeating: "A", count: 101)))["name"] != nil)
+    #expect(EnquiryValidator.validate(makeEnquiry(email: valid254Email)).isEmpty)
+    #expect(EnquiryValidator.validate(makeEnquiry(phone: valid30DigitPhone)).isEmpty)
+    #expect(EnquiryValidator.validate(makeEnquiry(phone: String(repeating: "1", count: 31)))["phone"] != nil)
+    #expect(EnquiryValidator.validate(makeEnquiry(message: String(repeating: "M", count: 2_000))).isEmpty)
+    #expect(EnquiryValidator.validate(makeEnquiry(message: String(repeating: "M", count: 2_001)))["message"] != nil)
+}
+
+@Test
 func enquiryValidatorRejectsInvalidAndOverlongEmails() {
     let invalidEmailErrors = EnquiryValidator.validate(makeEnquiry(email: "not-an-email"))
     let longEmail = String(repeating: "a", count: 242) + "@example.test"
@@ -104,13 +138,32 @@ func enquiryValidatorRejectsNonPositiveProductIds() {
 @Test
 func searchQueryTrimsAndEnforcesItsLengthRange() throws {
     let query = try SearchQuery(" \n jacket \t ")
+    let minimumQuery = try SearchQuery("ab")
+    let maximumQuery = try SearchQuery(String(repeating: "a", count: 100))
 
     #expect(query.value == "jacket")
+    #expect(minimumQuery.value == "ab")
+    #expect(maximumQuery.value.count == 100)
     #expect(throws: AppError.self) {
         try SearchQuery("a")
     }
     #expect(throws: AppError.self) {
         try SearchQuery(String(repeating: "a", count: 101))
+    }
+}
+
+@Test
+func searchQueryUsesUtf16LengthForUnicodeBounds() throws {
+    let emoji = try SearchQuery("\u{1F600}")
+    let composedGrapheme = "e\u{0301}"
+    let fiftyGraphemes = String(repeating: composedGrapheme, count: 50)
+    let fiftyOneGraphemes = String(repeating: composedGrapheme, count: 51)
+
+    #expect(emoji.value == "\u{1F600}")
+    #expect(fiftyGraphemes.utf16.count == 100)
+    #expect(try SearchQuery(fiftyGraphemes).value == fiftyGraphemes)
+    #expect(throws: AppError.self) {
+        try SearchQuery(fiftyOneGraphemes)
     }
 }
 

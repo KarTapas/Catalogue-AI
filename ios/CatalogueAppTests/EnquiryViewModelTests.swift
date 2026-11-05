@@ -212,6 +212,71 @@ func enquiryMessageCharacterCountIncludesOverLimitInput() {
     #expect(EnquiryText.messageCharacterCount(String(repeating: "x", count: 1_999)) == "1999 / 2000 characters")
     #expect(EnquiryText.messageCharacterCount(String(repeating: "x", count: 2_000)) == "2000 / 2000 characters")
     #expect(EnquiryText.messageCharacterCount(String(repeating: "x", count: 2_001)) == "2001 / 2000 characters")
+    #expect(EnquiryText.messageCharacterCount(String(repeating: "\u{1F600}", count: 1_000)) == "2000 / 2000 characters")
+    #expect(EnquiryText.messageCharacterCount(String(repeating: "\u{1F600}", count: 1_001)) == "2002 / 2000 characters")
+}
+
+@Test
+@MainActor
+func enquiryViewModelRejectsAndAcceptsUnicodeNamesAtUtf16Limit() async {
+    let rejectedRepository = FakeEnquiryRepository(outcomes: [])
+    let rejectedViewModel = makeEnquiryViewModel(repository: rejectedRepository)
+    fillValidEnquiry(rejectedViewModel)
+    rejectedViewModel.name = String(repeating: "e\u{0301}", count: 51)
+
+    await rejectedViewModel.submit()
+
+    #expect(rejectedViewModel.state == .editing)
+    #expect(rejectedViewModel.fieldErrors["name"] == "Name must be 100 characters or fewer.")
+    #expect(await rejectedRepository.submissionCount() == 0)
+
+    let receipt = EnquiryReceipt(id: "unicode-name")
+    let acceptedRepository = FakeEnquiryRepository(outcomes: [.success(receipt)])
+    let acceptedViewModel = makeEnquiryViewModel(repository: acceptedRepository)
+    let acceptedName = String(repeating: "e\u{0301}", count: 50)
+    fillValidEnquiry(acceptedViewModel)
+    acceptedViewModel.name = acceptedName
+
+    await acceptedViewModel.submit()
+
+    #expect(acceptedViewModel.state == .succeeded(receipt))
+    #expect(await acceptedRepository.recordedSubmissions() == [
+        Enquiry(
+            productId: 42,
+            name: acceptedName,
+            email: "ada@example.test",
+            phone: nil,
+            message: "I have a question."
+        ),
+    ])
+}
+
+@Test
+@MainActor
+func enquiryViewModelAcceptsAndRejectsEmojiAtUtf16MessageLimit() async {
+    let thousandEmoji = String(repeating: "\u{1F600}", count: 1_000)
+    let thousandAndOneEmoji = String(repeating: "\u{1F600}", count: 1_001)
+    let receipt = EnquiryReceipt(id: "unicode-message")
+    let acceptedRepository = FakeEnquiryRepository(outcomes: [.success(receipt)])
+    let acceptedViewModel = makeEnquiryViewModel(repository: acceptedRepository)
+    fillValidEnquiry(acceptedViewModel)
+    acceptedViewModel.message = thousandEmoji
+
+    await acceptedViewModel.submit()
+
+    #expect(acceptedViewModel.state == .succeeded(receipt))
+    #expect(await acceptedRepository.recordedSubmissions().first?.message == thousandEmoji)
+
+    let rejectedRepository = FakeEnquiryRepository(outcomes: [])
+    let rejectedViewModel = makeEnquiryViewModel(repository: rejectedRepository)
+    fillValidEnquiry(rejectedViewModel)
+    rejectedViewModel.message = thousandAndOneEmoji
+
+    await rejectedViewModel.submit()
+
+    #expect(rejectedViewModel.state == .editing)
+    #expect(rejectedViewModel.fieldErrors["message"] == "Message must be 2,000 characters or fewer.")
+    #expect(await rejectedRepository.submissionCount() == 0)
 }
 
 @MainActor

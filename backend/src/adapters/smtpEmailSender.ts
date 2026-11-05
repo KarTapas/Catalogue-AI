@@ -9,9 +9,39 @@ type SmtpOptions = {
   pass?: string;
 };
 
+type SmtpTransportOptions = {
+  host: string;
+  port: number;
+  auth?: {
+    user: string;
+    pass: string;
+  };
+  requireTLS?: boolean;
+  secure?: boolean;
+};
+
 type MailTransporter = {
   sendMail(message: EmailMessage): Promise<unknown>;
 };
+
+export function buildTransportOptions({
+  host,
+  port,
+  user,
+  pass,
+}: SmtpOptions): SmtpTransportOptions {
+  const transportOptions: SmtpTransportOptions = { host, port };
+
+  if (user !== undefined && pass !== undefined) {
+    transportOptions.auth = { user, pass };
+    transportOptions.requireTLS = true;
+    if (port === 465) {
+      transportOptions.secure = true;
+    }
+  }
+
+  return transportOptions;
+}
 
 export class SmtpEmailSender implements EmailSender {
   private readonly transporter: MailTransporter;
@@ -28,16 +58,7 @@ export class SmtpEmailSender implements EmailSender {
       );
     }
 
-    const auth =
-      options.user === undefined || options.pass === undefined
-        ? undefined
-        : { user: options.user, pass: options.pass };
-
-    this.transporter = nodemailer.createTransport({
-      host: options.host,
-      port: options.port,
-      ...(auth === undefined ? {} : { auth }),
-    });
+    this.transporter = nodemailer.createTransport(buildTransportOptions(options));
   }
 
   async send(message: EmailMessage): Promise<void> {
