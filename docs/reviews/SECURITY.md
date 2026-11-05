@@ -6,11 +6,11 @@ Read-only review. Local HTTP probes used synthetic `.test` data. No production s
 
 ## Findings
 
-| ID | Severity | File and line | Evidence | Risk | Suggested fix |
-|---|---|---|---|---|---|
-| S1 | medium | `ios/CatalogueApp/DesignSystem/RemoteImage.swift:10`; `ios/CatalogueApp/Presentation/ProductDetail/ProductDetailView.swift:40`; `backend/src/adapters/fakeStoreProductSource.ts:34` | Product image URLs come from upstream data and are loaded with SwiftUI `AsyncImage`; the URL schema checks URL syntax but does not restrict the host. | A compromised or changed catalogue source can make the app contact an arbitrary image host, exposing the user's device IP/network metadata and bypassing the backend-only boundary. | Proxy image retrieval through the backend/data layer or enforce a documented host allowlist before rendering. |
-| S2 | medium | `backend/src/adapters/smtpEmailSender.ts:36-40` | The Nodemailer transport sets host, port, and optional auth, but does not set `secure` or `requireTLS`. | With SMTP credentials, a server that does not offer STARTTLS may receive the login and email in plaintext. | Require TLS when credentials are configured, or use a secure transport and fail closed if TLS cannot be negotiated. |
-| S3 | low | `backend/Dockerfile:1`; `docker-compose.yml:19`; `.github/workflows/ci.yml:15,33,40` | `node:20-alpine`, `axllent/mailpit:latest`, and GitHub Actions `@v4` tags are mutable tags, not immutable digests/SHAs. | A tag can move to different code without a source change, weakening reproducibility and supply-chain review. | Pin container images to digests and actions to reviewed commit SHAs (while retaining update automation). |
+| ID | Severity | File and line | Evidence | Risk | Suggested fix | Status |
+|---|---|---|---|---|---|---|
+| S1 | medium | `ios/CatalogueApp/DesignSystem/RemoteImage.swift:10`; `ios/CatalogueApp/Presentation/ProductDetail/ProductDetailView.swift:40`; `backend/src/adapters/fakeStoreProductSource.ts:34` | Product image URLs come from upstream data and are loaded with SwiftUI `AsyncImage`; the URL schema checks URL syntax but does not restrict the host. | A compromised or changed catalogue source can make the app contact an arbitrary image host, exposing the user's device IP/network metadata and bypassing the backend-only boundary. | Proxy image retrieval through the backend/data layer or enforce a documented host allowlist before rendering. | Accepted: images use the data-source URL and product metadata goes through the backend; the mapper restricts schemes to HTTP/HTTPS; proxying is deferred due to its own SSRF risk. |
+| S2 | medium | `backend/src/adapters/smtpEmailSender.ts:36-40` | The Nodemailer transport sets host, port, and optional auth, but does not set `secure` or `requireTLS`. | With SMTP credentials, a server that does not offer STARTTLS may receive the login and email in plaintext. | Require TLS when credentials are configured, or use a secure transport and fail closed if TLS cannot be negotiated. | Fixed in `ce0ad8e` |
+| S3 | low | `backend/Dockerfile:1`; `docker-compose.yml:19`; `.github/workflows/ci.yml:15,33,40` | `node:20-alpine`, `axllent/mailpit:latest`, and GitHub Actions `@v4` tags are mutable tags, not immutable digests/SHAs. | A tag can move to different code without a source change, weakening reproducibility and supply-chain review. | Pin container images to digests and actions to reviewed commit SHAs (while retaining update automation). | Accepted: the tags are mutable; Docker and GitHub Actions were not run on this machine; pinning is a next step. |
 
 ## Security checks
 
@@ -151,7 +151,7 @@ The Swift package has no third-party package dependencies. CatalogueData depends
 
 - Dockerfile uses Node 20, builds before runtime, exposes port 3000, and runs as the non-root `node` user. `.dockerignore` excludes `.env`, `node_modules`, `dist`, and tests. Compose passes the required configuration and binds backend/Mailpit ports to loopback; no real secret is committed.
 - Compose uses `axllent/mailpit:latest`, and the Node image uses a mutable tag; see S4.
-- CI has `contents: read`, npm caching, major-version action tags, and no secrets. The iOS job's working directory issue is R1.
+- CI has `contents: read`, npm caching, major-version action tags, and no secrets. The iOS project-path issue recorded as R1 in `REVIEW.md` was fixed after review; local YAML parsing and working-directory path checks passed, but GitHub Actions was not run.
 - Docker is not installed here; neither the image nor Compose was run. The Mailpit end-to-end result is documented from earlier T12 work but was not re-run during this audit. The workflow YAML parsed locally, but GitHub Actions was not run. The workflow remains unverified until a GitHub run.
 
 ## Checked and fine
@@ -164,3 +164,7 @@ The Swift package has no third-party package dependencies. CatalogueData depends
 - ATS is localhost-only; the Release binary omits the DEBUG-only hooks.
 - The public-registry dependency audit returned 0 vulnerabilities.
 - Category requests are checked against the upstream category list before reaching the adapter; crafted dot-segment and URL-looking values returned `NOT_FOUND` without calling `listByCategory`.
+
+## Resolution
+
+S1 is accepted: images load from the data-source-provided URL while product metadata goes through the backend; the existing DTO mapper restricts image schemes to HTTP and HTTPS. A backend image proxy remains a future step and carries its own SSRF risk. S2 was fixed in `ce0ad8e`: authenticated SMTP requires TLS, and port 465 uses implicit TLS; authenticated TLS was not tested against a real provider. S3 is accepted for now: the container and action tags are mutable, and neither Docker nor GitHub Actions was run on this machine; pinning is a next step.
