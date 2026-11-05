@@ -5,19 +5,20 @@ The creative team will replace the visuals. Keep ALL styling in `DesignSystem/` 
 | Token | Value (placeholder) |
 |---|---|
 | Colours | `brand`, `background`, `surface`, `textPrimary`, `textSecondary`, `error`, via Asset Catalog (light + dark) |
-| Spacing | 4, 8, 12, 16, 24, 32 |
+| Spacing | 4, 8, 12, 16, 24, 32; 44pt minimum tap target; 48pt search-row minimum height |
 | Radius | 8, 12, 16 |
+| Opacity | Disabled controls: 0.5 |
 | Type | System text styles only (`.title`, `.headline`, `.body`, `.caption`) for Dynamic Type |
 
 ## Components
-`ProductTile`, `ProductGrid`, `SectionHeader`, `LoadStateView` (loading/error/empty wrapper), `PrimaryButton`, `FormField`, `RatingView`, `RemoteImage` (AsyncImage + placeholder).
+`ProductTile`, `ProductGrid`, `SectionHeader`, `LoadStateView` (loading/error/empty wrapper), `PrimaryButton`, `FormField`, `RatingView`, `RemoteImage` (AsyncImage + placeholder), `SearchBar` (compact rounded field with clear and icon-only submit buttons).
 
 ## Screens
 | Screen | Content | States |
 |---|---|---|
-| Home | Search bar, category chips, 5 featured tiles | loading, error+retry |
+| Home | Compact search row with leading magnifier and trailing icon button, category chips, 5 featured tiles | loading, error+retry |
 | Category | "Top rated" section (3), "More in <category>" section | loading, empty, error |
-| Search results | Query + results | idle, loading, empty ("No results for ..."), error |
+| Search results | Compact search row + results | idle, loading, empty ("No results for ..."), error |
 | Product detail | Image, title, price, rating, description, **Enquire** button | loading, error |
 | Enquiry form (sheet) | name, email, phone (optional), message, Submit | validating, submitting, success ("Thank you"), error |
 

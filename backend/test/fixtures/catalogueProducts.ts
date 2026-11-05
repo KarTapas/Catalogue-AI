@@ -1,0 +1,111 @@
+import type { Product } from "../../src/domain/product.js";
+
+function makeProduct(
+  id: number,
+  title: string,
+  description: string,
+  category: string,
+  rate: number,
+  count: number,
+): Product {
+  return {
+    id,
+    title,
+    description,
+    category,
+    price: { amount: "19.99", currency: "USD" },
+    imageUrl: `https://images.example.test/${id}.jpg`,
+    rating: { rate, count },
+  };
+}
+
+export const catalogueProducts: Product[] = [
+  makeProduct(
+    1,
+    "Amber Kettle",
+    "A brushed stainless steel electric kettle for morning tea.",
+    "kitchen & dining",
+    4.8,
+    100,
+  ),
+  makeProduct(
+    2,
+    "Cobalt Teapot",
+    "A ceramic vessel for loose leaf tea.",
+    "kitchen & dining",
+    4.8,
+    250,
+  ),
+  makeProduct(
+    3,
+    "Travel Press",
+    "A compact French press for coffee on the road.",
+    "kitchen & dining",
+    4.8,
+    100,
+  ),
+  makeProduct(
+    4,
+    "Steel Tea Infuser",
+    "A fine mesh insert for loose-leaf brewing.",
+    "kitchen & dining",
+    4.6,
+    500,
+  ),
+  makeProduct(
+    5,
+    "Garden Gloves",
+    "Durable gloves for pruning roses.",
+    "garden",
+    4.9,
+    50,
+  ),
+  makeProduct(
+    6,
+    "Copper Planter",
+    "A compact indoor pot for herbs.",
+    "garden",
+    4.2,
+    90,
+  ),
+  makeProduct(
+    7,
+    "Wireless Headphones",
+    "Over-ear sound with a long battery life.",
+    "electronics",
+    4.7,
+    200,
+  ),
+  makeProduct(
+    8,
+    "Wireless Mouse",
+    "A compact pointing device with a cobalt-blue finish.",
+    "electronics",
+    4.7,
+    150,
+  ),
+  makeProduct(
+    9,
+    "Desk Lamp",
+    "A warm amber beam for reading.",
+    "electronics",
+    4.9,
+    500,
+  ),
+  makeProduct(
+    10,
+    "Men's Canvas Backpack",
+    "A durable bag for everyday use.",
+    "men's clothing",
+    4.0,
+    25,
+  ),
+  makeProduct(
+    11,
+    "Amber Lamp",
+    "An adjustable reading light with a warm LED.",
+    "electronics",
+    3.0,
+    10,
+  ),
+];

@@ -1,0 +1,81 @@
+name: CatalogueApp
+
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+packages:
+  CatalogueCore:
+    path: CatalogueCore
+
+# Local PoC backend uses plain HTTP; production must use HTTPS and remove the localhost ATS exception.
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1"
+
+targets:
+  CatalogueApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: CatalogueApp/Presentation
+      - path: CatalogueApp/DesignSystem
+      - path: CatalogueApp/Composition
+    configFiles:
+      Debug: CatalogueApp/Config/Debug.xcconfig
+      Release: CatalogueApp/Config/Release.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.catalogue
+        INFOPLIST_FILE: CatalogueApp/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_EXPAND_BUILD_SETTINGS: YES
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+        SUPPORTS_MACCATALYST: NO
+    dependencies:
+      - package: CatalogueCore
+        product: CatalogueDomain
+      - package: CatalogueCore
+        product: CatalogueData
+
+  CatalogueAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: CatalogueAppTests
+    dependencies:
+      - target: CatalogueApp
+      - package: CatalogueCore
+        product: CatalogueDomain
+      - package: CatalogueCore
+        product: CatalogueData
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.catalogue.tests
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/CatalogueApp.app/CatalogueApp"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  CatalogueApp:
+    build:
+      targets:
+        CatalogueApp: all
+        CatalogueAppTests: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      environmentVariables:
+        CATALOGUE_DISABLE_AUTOMATIC_HOME_LOAD: "1"
+      targets:
+        - CatalogueAppTests
