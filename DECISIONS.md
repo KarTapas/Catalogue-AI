@@ -44,6 +44,7 @@ The A1-A7 gap and assumption text is copied from `docs/PRD.md`. The final column
 | Load images from the source URL included in product data (accepted R2/S1). | Proxy images through the backend or enforce a host allow-list. | The current app uses `AsyncImage`; the accepted resolution defers a proxy because it adds SSRF risk. The DTO mapper limits schemes to HTTP and HTTPS. | The device still contacts the supplied host directly; no host allow-list or proxy is present. |
 | Require TLS only when SMTP credentials are configured; use implicit TLS on port 465. | Require TLS for all SMTP connections or send authenticated credentials without TLS. | S2 was fixed while preserving unauthenticated Mailpit SMTP. `requireTLS` is set with credentials, and port 465 also sets `secure`. | Authenticated TLS has not been tested with a real provider. |
 | Keep the Xcode app target in Swift 5 language mode. | Enable strict Swift 6 language mode now. | `SWIFT_VERSION` is `5.0`, matching the package's Swift tools 5.9 Swift 5 mode, as recorded in `docs/MEMORY.md`. | Strict Swift 6 concurrency checking remains future work. |
+| Keep Search visible as a compact icon-only button inside the field row. | Use a full-width button below the field or hide the submit control. | US3 requires tapping the search button; this preserves that action and keyboard Search behavior while reducing vertical space. | Preserve 44pt targets and explicit disabled state/semantics. |
 
 ## Dropped or simplified, and why
 

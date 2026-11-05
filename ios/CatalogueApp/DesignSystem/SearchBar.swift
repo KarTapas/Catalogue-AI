@@ -19,8 +19,13 @@ struct SearchBar: View {
     }
 
     var body: some View {
-        VStack(spacing: Spacing.s8) {
+        VStack(alignment: .leading, spacing: Spacing.s8) {
             HStack(spacing: Spacing.s8) {
+                Image(systemName: "magnifyingglass")
+                    .font(Typography.body)
+                    .foregroundStyle(Palette.textSecondary)
+                    .accessibilityHidden(true)
+
                 TextField("Search products", text: $text)
                     .font(Typography.body)
                     .foregroundStyle(Palette.textPrimary)
@@ -28,6 +33,7 @@ struct SearchBar: View {
                     .submitLabel(.search)
                     .onSubmit(performSearch)
                     .accessibilityLabel("Search products")
+                    .layoutPriority(1)
 
                 if !text.isEmpty {
                     Button {
@@ -36,11 +42,37 @@ struct SearchBar: View {
                         Image(systemName: "xmark.circle.fill")
                             .font(Typography.body)
                             .foregroundStyle(Palette.textSecondary)
+                            .frame(
+                                width: Spacing.minimumTapTarget,
+                                height: Spacing.minimumTapTarget
+                            )
                     }
+                    .buttonStyle(.plain)
                     .accessibilityLabel("Clear search")
                 }
+
+                Button(action: performSearch) {
+                    Image(systemName: "magnifyingglass")
+                        .font(Typography.body)
+                        .foregroundStyle(canSearch ? Palette.surface : Palette.textSecondary)
+                        .frame(
+                            width: Spacing.minimumTapTarget,
+                            height: Spacing.minimumTapTarget
+                        )
+                        .background(
+                            canSearch ? Palette.brand : Palette.background,
+                            in: Circle()
+                        )
+                }
+                .buttonStyle(.plain)
+                .opacity(canSearch ? 1 : Opacity.disabled)
+                .disabled(!canSearch)
+                .accessibilityLabel("Search")
+                .accessibilityHint("Searches the catalogue")
             }
-            .padding(Spacing.s12)
+            .padding(.leading, Spacing.s12)
+            .padding(.trailing, Spacing.s4)
+            .frame(minHeight: Spacing.searchBarMinimumHeight)
             .background(
                 Palette.surface,
                 in: RoundedRectangle(cornerRadius: Radius.r12)
@@ -50,11 +82,10 @@ struct SearchBar: View {
                 Text(verbatim: validationMessage)
                     .font(Typography.caption)
                     .foregroundStyle(Palette.error)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, Spacing.s4)
+                    .accessibilityAddTraits(.updatesFrequently)
             }
-
-            PrimaryButton(title: "Search", action: performSearch)
-                .disabled(!canSearch)
         }
     }
 
@@ -66,11 +97,40 @@ struct SearchBar: View {
     }
 }
 
-#Preview {
+#Preview("Empty") {
+    SearchBar(
+        text: .constant(""),
+        canSearch: false,
+        onSearch: {}
+    )
+    .padding()
+}
+
+#Preview("Valid text") {
     SearchBar(
         text: .constant("jacket"),
         canSearch: true,
         onSearch: {}
     )
     .padding()
+}
+
+#Preview("One character") {
+    SearchBar(
+        text: .constant("j"),
+        canSearch: false,
+        onSearch: {},
+        validationMessage: "Enter a search query between 2 and 100 characters."
+    )
+    .padding()
+}
+
+#Preview("Large text") {
+    SearchBar(
+        text: .constant("jacket"),
+        canSearch: true,
+        onSearch: {}
+    )
+    .padding()
+    .environment(\.dynamicTypeSize, .accessibility3)
 }
