@@ -159,7 +159,26 @@ func refreshReloadsBothSections() async {
     let viewModel = makeViewModel(repository: repository)
 
     await viewModel.load()
+    await repository.setFeaturedOutcome(
+        .success([makeProduct(id: 12), makeProduct(id: 7)])
+    )
+    await repository.setCategoriesOutcome(
+        .success(["women's clothing", "jewelery"])
+    )
     await viewModel.refresh()
+
+    guard case let .loaded(featuredProducts) = viewModel.featured else {
+        Issue.record("Expected refreshed featured products to be loaded")
+        return
+    }
+    #expect(featuredProducts.map(\.id) == [12, 7])
+    #expect(featuredProducts.map(\.title) == ["Product 12", "Product 7"])
+
+    guard case let .loaded(categories) = viewModel.categories else {
+        Issue.record("Expected refreshed categories to be loaded")
+        return
+    }
+    #expect(categories == ["women's clothing", "jewelery"])
 
     let counts = await repository.callCounts()
     #expect(counts.featured == 2)
@@ -319,6 +338,10 @@ private actor FakeProductRepository: ProductRepository {
 
     func setFeaturedOutcome(_ outcome: FakeRepositoryOutcome<[Product]>) {
         featuredOutcome = outcome
+    }
+
+    func setCategoriesOutcome(_ outcome: FakeRepositoryOutcome<[String]>) {
+        categoriesOutcome = outcome
     }
 
     func waitForFeaturedRequest() async {
