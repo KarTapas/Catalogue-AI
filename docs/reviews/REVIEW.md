@@ -4,7 +4,7 @@ Read-only review against `docs/RULES.md` and `docs/ARCHITECTURE.md`. The diff is
 
 **Verdict: CHANGES REQUESTED — 1 high, 2 medium, 2 low.**
 
-**Follow-up:** R1 was fixed after review by changing the iOS CI project path to `../ios/CatalogueApp.xcodeproj`; local YAML parsing and working-directory path checks passed. GitHub Actions was not run. The verdict counts above reflect the findings as observed during the review; R2-R5 remain open.
+**Follow-up:** R1 was fixed after review by changing the iOS CI project path to `../ios/CatalogueApp.xcodeproj`; local YAML parsing and working-directory path checks passed. GitHub Actions was not run. The verdict counts above reflect the findings as observed during the review; R2-R5 were open at that time.
 
 ## Findings
 
@@ -13,8 +13,8 @@ Read-only review against `docs/RULES.md` and `docs/ARCHITECTURE.md`. The diff is
 | R1 | `.github/workflows/ci.yml:64-70` | The iOS CI job must build the project from a path that exists in its working directory. | high | The step runs with `working-directory: backend` while invoking `ios/CatalogueApp.xcodeproj`; `test -e backend/ios/CatalogueApp.xcodeproj` reports `missing`. | Run `xcodebuild` from the repository root or use `../ios/CatalogueApp.xcodeproj`. | Fixed in `6917f81` |
 | R2 | `ios/CatalogueApp/DesignSystem/RemoteImage.swift:10`; `ios/CatalogueApp/Presentation/ProductDetail/ProductDetailView.swift:40` | iOS must access the network through `CatalogueData`; the PRD says the app never calls Fake Store. | medium | `RemoteImage` uses `AsyncImage(url:)`, and ProductDetailView passes the backend-provided `product.imageURL`. The image is fetched directly by SwiftUI, outside `CatalogueData`. | Proxy images through the backend/data layer, or explicitly revise the network-boundary requirement and document an allowlist and privacy implications. | Accepted: images load from the data-source URL; product metadata still goes through the backend; image proxying is deferred because it adds SSRF risk. |
 | R3 | `backend/src/http/routes.ts:36,48`; `ios/CatalogueCore/Sources/CatalogueDomain/Validation/EnquiryValidator.swift:18,45` | Client and server validation must agree. | medium | For `"e\u0301"` repeated 51 times, JavaScript reports `102` UTF-16 code units while Swift reports `51` grapheme clusters. The name/message pass the client count but exceed the server's Zod `.max()` limit. | Define a shared Unicode normalization and length-counting policy, then apply it on both sides. | Fixed in `ce0ad8e` |
-| R4 | `ios/CatalogueAppTests/HomeViewModelTests.swift:154-167` | Tests should assert resulting behavior, not only fake call counts. | low | `refreshReloadsBothSections` asserts only `featured == 2` and `categories == 2`; it does not assert refreshed values or state. | Assert the refreshed featured products and categories in the ViewModel state. | Open |
-| R5 | `ios/CatalogueCore/Tests/CatalogueDataTests/CatalogueDataTests.swift:5` | Tests should verify behavior. | low | `catalogueDataTargetBuilds() {}` has no assertions and contributes to the test count. | Remove the empty test or replace it with a behavior assertion. | Open |
+| R4 | `ios/CatalogueAppTests/HomeViewModelTests.swift:154-167` | Tests should assert resulting behavior, not only fake call counts. | low | `refreshReloadsBothSections` asserts only `featured == 2` and `categories == 2`; it does not assert refreshed values or state. | Assert the refreshed featured products and categories in the ViewModel state. | Fixed in `04cbf1b` |
+| R5 | `ios/CatalogueCore/Tests/CatalogueDataTests/CatalogueDataTests.swift:5` | Tests should verify behavior. | low | `catalogueDataTargetBuilds() {}` has no assertions and contributes to the test count. | Remove the empty test or replace it with a behavior assertion. | Fixed in `04cbf1b` |
 
 ## Pass 1 evidence
 
@@ -173,4 +173,4 @@ git diff --check: clean
 
 ## Resolution
 
-R1 was fixed in `6917f81`; R3 was fixed in `ce0ad8e` by aligning client length checks and the visible message counter with UTF-16 code units. R2 is accepted: images load directly from the data-source-provided URL while product metadata goes through the backend; image proxying remains a next step and carries its own SSRF risk. The existing DTO mapper permits only HTTP and HTTPS image URLs. R4 and R5 remain open for human triage. The initial verdict and counts describe the original review; current outcomes are recorded in the Status column.
+R1 was fixed in `6917f81`; R3 was fixed in `ce0ad8e` by aligning client length checks and the visible message counter with UTF-16 code units. R2 is accepted: images load directly from the data-source-provided URL while product metadata goes through the backend; image proxying remains a next step and carries its own SSRF risk. The existing DTO mapper permits only HTTP and HTTPS image URLs. R4 and R5 were fixed in `04cbf1b`: the refresh test now asserts the second-call IDs, names, categories and call counts, and the empty CatalogueData test was removed. The target remains because other test modules live in it. The initial verdict and counts describe the original review; current outcomes are recorded in the Status column.

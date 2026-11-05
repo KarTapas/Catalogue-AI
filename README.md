@@ -3,7 +3,7 @@
 ## 1. What this is
 
 A product catalogue app with featured products, categories, search, product details and enquiries.
-The SwiftUI app talks only to the project backend; it never calls Fake Store directly.
+Product metadata and enquiries use the project backend. SwiftUI loads images from the image URLs supplied in product data.
 Enquiries are sent through a replaceable email adapter, with console and SMTP options.
 
 Screenshots: [Home](docs/screenshots/home.png), [Category](docs/screenshots/category-mens-clothing.png), [Search](docs/screenshots/search-jacket.png), [Product detail](docs/screenshots/product-1.png), [Enquiry form](docs/screenshots/enquiry-form.png), [Validation errors](docs/screenshots/enquiry-errors.png), [Thank you](docs/screenshots/enquiry-thank-you.png), [Large text](docs/screenshots/product-large-text.png).
@@ -114,7 +114,7 @@ xcrun simctl list devices available
 xcodebuild -project ios/CatalogueApp.xcodeproj -scheme CatalogueApp -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.0' -derivedDataPath ios/build/DerivedData build test
 ```
 
-Most recently verified counts: backend **80 tests**, CatalogueCore **31 tests** (the default run skips the optional live test; a separate configured run passed it), and app **63 tests**.
+Most recently verified counts: backend **83 tests passed**, CatalogueCore **33 test cases** (**32 passed**, with the optional live contract test skipped), and app **65 tests passed**.
 
 ## 7. API summary
 
@@ -158,10 +158,10 @@ docker-compose.yml       Backend and Mailpit services
 
 | Area | Status and evidence |
 |---|---|
-| Backend unit tests, lint and build | Verified: 80 tests, lint and TypeScript build passed. |
+| Backend unit tests, lint and build | Verified: 83 tests passed; lint and TypeScript build passed. |
 | Backend startup modes | Verified in a clean copy: `start:local` with `.env` and `npm start` with environment-only configuration returned health 200; no configuration exits 1 with a clear missing-`EMAIL_FROM` message and no stack trace. |
-| CatalogueCore tests | Verified: the default 31-test suite passed with the optional live test skipped; a separate run with `CATALOGUE_LIVE_API_URL` set passed all 31, including the live contract test. |
-| iOS app tests | Verified: 63 tests passed on iPhone SE (3rd generation), iOS 18.0. |
+| CatalogueCore tests | Verified: 33 test cases total; 32 passed and the optional live contract test was skipped because `CATALOGUE_LIVE_API_URL` was unset. |
+| iOS app tests | Verified: 65 tests passed on iPhone SE (3rd generation), iOS 18.0. |
 | Release build and preview hooks | Verified: Release Simulator build passed; `UI_PREVIEW_ROUTE` and `enquiry-submit` are absent from its executable. |
 | Mailpit enquiry flow | Verified end to end; a valid API enquiry and the app test enquiry reached Mailpit. See the [architecture notes](docs/ARCHITECTURE.md#verified-end-to-end). |
 | Simulator screenshots | Captured under [`docs/screenshots`](docs/screenshots/), including the product, enquiry form, validation errors and thank-you state. |

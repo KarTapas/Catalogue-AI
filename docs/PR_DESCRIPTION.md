@@ -4,7 +4,7 @@
 
 ## Summary
 
-Builds the iPhone catalogue proof of concept and its Fastify backend, covering featured products, categories, search, product details and product enquiries. The app talks only to the backend; the backend owns the Fake Store and email integrations.
+Builds the iPhone catalogue proof of concept and its Fastify backend, covering featured products, categories, search, product details and product enquiries. Product metadata and enquiries go through the backend; SwiftUI loads product images from the image URLs supplied in product data (accepted finding R2/S1).
 
 ## What was built by acceptance criterion
 
@@ -20,9 +20,9 @@ Builds the iPhone catalogue proof of concept and its Fastify backend, covering f
 
 - iOS follows Presentation -> Domain <- Data; the domain imports Foundation only and dependency injection is through initializers.
 - The backend uses ports and adapters: `ProductSource` isolates the Fake Store integration, and `EmailSender` supports console and SMTP providers.
-- Product details are fetched by ID so deep links and stale list data do not determine the detail screen.
+- Product details are fetched by ID so deep links and stale list data do not determine the detail screen. `RemoteImage` uses `AsyncImage` for the backend-supplied image URL; see accepted finding R2/S1.
 - Enquire stays disabled until the product is loaded. Field errors appear after touch or a submit attempt; a submitting guard prevents duplicate sends; a failure keeps entered values editable; success clears form values from memory.
-- The API returns decimal prices as strings. The iOS app does not call Fake Store directly.
+- The API returns decimal prices as strings. The iOS app does not call Fake Store for product metadata; image URLs are fetched directly by SwiftUI and are restricted to HTTP/HTTPS schemes by the DTO mapper.
 
 See [docs/ARCHITECTURE.md](ARCHITECTURE.md) for the full contracts and boundaries.
 
@@ -58,26 +58,29 @@ Then open `ios/CatalogueApp.xcodeproj` in Xcode and run on an iPhone Simulator. 
 
 ## How it was tested
 
-- **Backend:** `cd backend && npm test && npm run lint && npm run build` — 80 tests; lint and build passed.
+- **Backend:** `cd backend && npm test && npm run lint && npm run build` — 83 tests passed; lint and build passed.
 - **Clean-copy startup:** `npm run start:local` with `.env` and `npm start` with environment-only configuration both returned health `200`; without configuration, startup exited `1` with a clear missing-`EMAIL_FROM` message and no stack trace.
-- **CatalogueCore:** `cd ios/CatalogueCore && swift test` — 31-test suite passed with the optional live test skipped. `cd ios/CatalogueCore && CATALOGUE_LIVE_API_URL=http://127.0.0.1:3000 swift test` passed all 31, including `liveBackendContract()`.
-- **iOS app:** `xcodebuild -project ios/CatalogueApp.xcodeproj -scheme CatalogueApp -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.0' -derivedDataPath ios/build/DerivedData build test` — 63 tests passed.
+- **CatalogueCore:** `cd ios/CatalogueCore && swift test` — 33 test cases total; 32 passed and the optional live contract test was skipped. The earlier configured live-contract result is documented in `docs/MEMORY.md` and was not rerun in this change.
+- **iOS app:** `xcodebuild -project ios/CatalogueApp.xcodeproj -scheme CatalogueApp -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.0' -derivedDataPath ios/build/DerivedData build test` — 65 tests passed.
 - **Release configuration:** Simulator build passed with `ENABLE_TESTABILITY=YES` supplied on the command line; `UI_PREVIEW_ROUTE` and `enquiry-submit` were absent from the Release executable.
-- **Live API contract:** passed against the locally running backend and its Fake Store adapter, including featured products, categories, category products, search, product detail and not-found handling.
-- **Mailpit E2E:** with Mailpit v1.33.0, a valid API enquiry returned `202` with ID `6e6fa904-01f3-44c3-b13f-b742818cc659`. Mailpit received subject `New enquiry: Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops (#1)` at `sales@example.test`, with Reply-To `smtp.test@example.test`; the body contained the product, customer details and message. A name containing CR/LF followed by `Bcc:` returned `400 VALIDATION_ERROR`, and Mailpit remained at one message with no Bcc. The app's `enquiry-submit:1` flow delivered a second message with Reply-To `test.customer@example.test`. The recorded result is in [docs/ARCHITECTURE.md](ARCHITECTURE.md#verified-end-to-end).
+- **Live API contract:** previously passed against the local backend and its Fake Store adapter, including featured products, categories, category products, search, product detail and not-found handling; not rerun in this change.
+- **Mailpit E2E:** the earlier Mailpit v1.33.0 result is recorded in [docs/ARCHITECTURE.md](ARCHITECTURE.md#verified-end-to-end); it was not rerun in this change.
 - **GitHub Actions and Docker:** not run here; both remain unverified.
 
 ## AI usage
 
-Tools used included GitHub Copilot CLI (GPT-6 Luna), token-goat source navigation, Git, npm/Vitest/ESLint/TypeScript, SwiftPM/Xcode, curl and Mailpit. Project instruction files followed: `AGENTS.md`, `docs/RULES.md`, `docs/ARCHITECTURE.md`, `docs/TASKS.md`, `docs/MEMORY.md` and `docs/PRD.md`. No subagents were used.
+The repository history contains Copilot co-author trailers. Per the author, GitHub Copilot CLI was used for implementation and a separate chat assistant was used for planning and writing prompts; model names and versions are not recorded in the repository. See [AI_USAGE.md](../AI_USAGE.md) for the draft account.
 
 ## Known limitations
 
 - Enquiries are email-only with no persistence; Fake Store is a proof-of-concept upstream.
-- The app is Simulator-only; physical-device and VoiceOver testing were not performed. Dynamic Type was checked only in the captured screenshots.
+- Product metadata uses the backend, but product images are loaded directly by SwiftUI from the supplied image URL; see accepted finding R2/S1.
+- The PRD targets Simulator, and only the Simulator was exercised; the app has no runtime Simulator-only check. Physical-device and VoiceOver testing were not performed. Dynamic Type was checked only in the captured screenshots.
 - Docker and GitHub Actions remain unverified. SwiftLint is not configured.
 - **TODO(author):** Add any project-specific limitations discovered during review.
 
 ## What I would do next
 
 Candidate follow-ups are persistent enquiry storage, a production catalogue source, VoiceOver/device testing, SwiftLint, and running the Docker and GitHub Actions checks. **TODO(author):** Prioritize these based on product needs and explain the rationale.
+
+Related drafts and reports: [DECISIONS.md](../DECISIONS.md) · [AI_USAGE.md](../AI_USAGE.md) · [Reviewer report](reviews/REVIEW.md) · [Security report](reviews/SECURITY.md).
